@@ -259,3 +259,6 @@ p { margin: 0 0 1em; }
 .hero h1 { font-size: clamp(2.6rem, 5.4vw, 4.8rem); line-height: 0.98; margin-bottom: 22px; }
 .hero .lede { margin-bottom: 16px; }
 .mails { display: flex; flex-direction: column; gap: 6px; }
+
+/* Pastille « disponible » en vert */
+.status::before { background: #2e9e4f; box-shadow: 0 0 0 3px rgba(46, 158, 79, 0.25); }
