@@ -4,11 +4,20 @@
 const META = {
   "banc-de-test-véhicules-électriques": {
     id: "banc-powertrain", year: "2026", tags: ["meca", "elec", "embarque"],
-    summary: "Conception et mise en service d'un banc d'essai Back-to-Back pour mesurer le rendement d'un moteur-roue de véhicule électrique."
+    summary: "Conception et mise en service d'un banc d'essai Back-to-Back pour mesurer le rendement d'un moteur-roue de véhicule électrique.",
+    tutors: [
+      { role: "Tuteur industriel", name: "Xavier Leblanc", org: "Metacar Mobility Systems",
+        links: [
+          { href: "https://www.kiweemobility.com/", label: "Site web" },
+          { href: "https://www.linkedin.com/company/metacar-mobility-systems/about/", label: "LinkedIn" }
+        ] },
+      { role: "Tuteur académique", name: "Eric Bideaux", org: "INSA Lyon" }
+    ]
   },
   "conception-mécanique-dactionneur": {
     id: "convoi-kiwee", year: "2025 – 2026", tags: ["meca", "elec", "embarque"],
-    summary: "Maquette au 1/10 de véhicules électriques qui s'emboîtent et roulent en convoi : CAO, carte à ESP32 et commande PID."
+    summary: "Maquette au 1/10 de véhicules électriques qui s'emboîtent et roulent en convoi : CAO, carte à ESP32 et commande PID.",
+    tutors: [{ role: "Tuteur académique", name: "Eric Bideaux", org: "INSA Lyon" }]
   },
   "projets-copr-insa-lyon": {
     id: "copr-insa-lyon", year: "2025", tags: ["meca", "embarque"],
@@ -197,6 +206,11 @@ async function renderProject() {
     else { half.push(c); if (half.length === 2) { fixed.push(...half); half = []; } }
   });
   if (half.length) fixed.push(half[0].replace('<div class=""', '<div class="full"'));
+
+  (p.tutors || []).forEach((t) => {
+    const links = (t.links || []).map((l) => `<a href="${l.href}" rel="noopener" target="_blank">${esc(l.label)}</a>`).join("");
+    fixed.push(`<div class="full tutor"><dt>${esc(t.role)}</dt><dd><strong>${esc(t.name)}</strong>${t.org ? `<span>${esc(t.org)}</span>` : ""}${links ? `<span class="t-links">${links}</span>` : ""}</dd></div>`);
+  });
 
   const extras = p.extra || [];
   const linkExtras = extras.filter((x) => x.link);
