@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Démo ChirBaby | Amin Driss</title>
+<meta name="description" content="Démo interactive de l'interface du simulateur de nouveau-né ChirBaby : simulateur respiratoire et auscultation (projet COPR, INSA Lyon).">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css?v=5">
+<style>
+  /* Couleurs reprises de l'interface Tkinter d'origine */
+  .cb { --cb-bar: #212121; --cb-bg: #434343; --cb-light: #d3d3d3; --cb-pink: #e5007e; --cb-blue: #5b9bd5; }
+  .cb-intro { padding: 8px 0 20px; }
+  .cb-intro h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 700; }
+  .cb-intro p { color: var(--steel); max-width: 70ch; margin-top: 12px; }
+  .cb-app { display: grid; grid-template-columns: 76px minmax(0, 1fr); background: var(--cb-bg); border: 2px solid var(--ink); min-height: 640px; color: #fff; }
+  .cb-bar { background: var(--cb-bar); display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 0; }
+  .cb-bar button { width: 56px; height: 56px; border: 0; border-radius: 8px; background: transparent; color: #cfd6da; cursor: pointer; display: grid; place-items: center; }
+  .cb-bar button svg { width: 30px; height: 30px; }
+  .cb-bar button[aria-current="page"], .cb-bar button:hover { background: #3a3a3a; color: #fff; }
+  .cb-main { position: relative; min-width: 0; }
+  .cb-view[hidden], .cb [hidden] { display: none !important; }
+
+  /* Menu */
+  .cb-menu { display: flex; flex-direction: column; align-items: center; gap: 28px; padding: 36px 20px 40px; }
+  .cb-menu .logo { width: min(520px, 90%); }
+  .cb-modules { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; }
+  .cb-modules button { padding: 0; border: 0; background: none; cursor: pointer; text-align: center; color: #fff; font: 600 1.05rem var(--text); }
+  .cb-modules img { width: 280px; max-width: 80vw; border-radius: 18px; transition: transform .15s; }
+  .cb-modules button:hover img { transform: translateY(-3px); }
+  .cb-modules span { display: block; margin-top: 8px; }
+
+  /* Simulateur respiratoire */
+  .cb-sim { display: grid; grid-template-columns: 210px minmax(0, 1fr) 150px; gap: 14px; padding: 16px; background: #808080; }
+  .cb-sim h2 { grid-column: 1 / -1; font-size: 1.6rem; text-align: center; background: lightgray; color: #111; border: 1px solid #000; border-radius: 10px; padding: 6px; justify-self: center; min-width: 50%; }
+  .cb-left { display: flex; flex-direction: column; gap: 10px; }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .tile { padding: 0; border: 0; background: none; color: #111; cursor: pointer; font: 600 .8rem var(--text); text-align: center; }
+  .tile img { width: 100%; display: block; border-radius: 10px; }
+  .tile.on img { outline: 3px solid #fff; }
+  .tile span { display: block; margin-top: 3px; line-height: 1.15; }
+  .group { background: #9a9a9a; border-radius: 8px; padding: 8px 10px; color: #111; font-size: .88rem; }
+  .group strong { display: block; margin-bottom: 4px; }
+  .group label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
+  .ie { background: whitesmoke; color: #111; border: 1px solid #000; border-radius: 8px; padding: 8px 10px; font-size: .85rem; white-space: pre-line; }
+  .plots { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .plot { background: #000; border-radius: 4px; position: relative; }
+  .plot canvas { width: 100%; height: 150px; display: block; }
+  .readouts { display: flex; flex-direction: column; gap: 8px; }
+  .readout { background: #000; border-radius: 4px; text-align: center; padding: 10px 4px; font: 600 .82rem var(--text); }
+  .readout b { display: block; font: 600 1.9rem var(--display); margin-top: 2px; }
+  .cb-controls { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 6px 22px; background: #8c8c8c; border-radius: 8px; padding: 12px 14px; color: #111; font-size: .86rem; }
+  .cb-controls label { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; align-items: center; }
+  .cb-controls input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--cb-pink); }
+  .cb-controls output { font-weight: 700; }
+  .cb-info { grid-column: 1 / -1; background: whitesmoke; color: #111; border: 1px solid #000; border-radius: 8px; padding: 10px 14px; font-size: .9rem; white-space: pre-line; }
+
+  /* Auscultation */
+  .cb-ausc { background: var(--cb-light); color: var(--cb-bar); padding: 20px; min-height: 600px; }
+  .cb-ausc h2 { font-size: clamp(2rem, 4vw, 3rem); color: var(--cb-bar); }
+  .organs { display: flex; flex-wrap: wrap; justify-content: space-around; gap: 30px; margin-top: 16px; }
+  .organ { text-align: center; }
+  .organ h3 { font-family: var(--display); font-size: 1.4rem; margin-bottom: 10px; }
+  .organ .fig { position: relative; display: inline-block; }
+  .organ .fig > img { display: block; max-width: 100%; height: auto; }
+  .pt { position: absolute; width: 44px; height: 44px; transform: translate(-50%, -50%); padding: 0; border: 0; background: none; cursor: pointer; border-radius: 50%; }
+  .pt img { width: 100%; height: 100%; }
+  .pt:focus-visible { outline: 3px solid var(--signal); }
+  .pt[aria-pressed="true"] { background: var(--cb-pink); box-shadow: 0 0 0 4px rgba(229, 0, 126, .25); }
+  .ausc-note { margin-top: 18px; font-size: .9rem; color: #333; max-width: 80ch; }
+  .ausc-now { margin-top: 10px; font-weight: 600; min-height: 1.5em; }
+
+  .cb-help { padding: 26px; max-width: 80ch; }
+  .cb-help h2 { font-size: 2.4rem; color: #cfd6da; margin-bottom: 14px; }
+  .cb-help p, .cb-help li { color: #f0f0f0; }
+
+  .cb-about { margin: 28px 0 10px; }
+  .cb-about h2 { font-size: var(--step-2); margin-bottom: 10px; }
+  .cb-about p { max-width: 72ch; }
+  .cb-about small { color: var(--steel); }
+
+  @media (max-width: 980px) {
+    .cb-sim { grid-template-columns: 1fr; }
+    .readouts { flex-direction: row; flex-wrap: wrap; }
+    .readout { flex: 1 1 120px; }
+    .tiles { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .cb-app { grid-template-columns: 1fr; }
+    .cb-bar { flex-direction: row; justify-content: center; }
+    .tiles { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="index.html">Amin Driss</a>
+    <nav class="nav" aria-label="Navigation principale">
+      <a href="index.html#projets" class="keep">Projets</a>
+      <a href="index.html#contact">Contact</a>
+      <a class="nav-cv" href="CV_Amin_Driss.pdf" download>CV (PDF)</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap cb">
+  <a class="back" href="projet.html?p=copr-insa-lyon">Retour aux projets COPR</a>
+  <header class="cb-intro">
+    <h1>Démo de l'interface ChirBaby</h1>
+    <p>Version web de l'interface Python (Tkinter et Matplotlib) développée pour le simulateur de nouveau-né ChirBaby 2.0, avec les Hospices Civils de Lyon. Elle reprend les mêmes modèles de ventilation et les mêmes enregistrements d'auscultation. Choisissez un module ci-dessous.</p>
+  </header>
+
+  <div class="cb-app">
+    <nav class="cb-bar" aria-label="Navigation de l'interface">
+      <button type="button" data-go="menu" aria-current="page" title="Accueil" aria-label="Accueil">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>
+      </button>
+      <button type="button" data-go="help" title="Informations" aria-label="Informations">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
+      </button>
+    </nav>
+
+    <div class="cb-main">
+      <!-- Accueil -->
+      <section class="cb-view cb-menu" data-view="menu">
+        <img class="logo" src="chirbaby/logo.png" alt="ChirBaby">
+        <div class="cb-modules">
+          <button type="button" data-go="sim"><img src="chirbaby/atresie.png" alt=""><span>Simulateur respiratoire (atrésie de l'œsophage)</span></button>
+          <button type="button" data-go="ausc"><img src="chirbaby/stethoscope.png" alt=""><span>Auscultation</span></button>
+        </div>
+      </section>
+
+      <!-- Simulateur respiratoire -->
+      <section class="cb-view cb-sim" data-view="sim" hidden>
+        <h2>Simulateur respiratoire</h2>
+        <div class="cb-left">
+          <div class="tiles" role="group" aria-label="Scénario">
+            <button type="button" class="tile" data-set="normal"><img src="chirbaby/full_lung.png" data-off="chirbaby/full_lung.png" data-on="chirbaby/full_lung_on.png" alt=""><span>Volume normal</span></button>
+            <button type="button" class="tile" data-set="pneumo"><img src="chirbaby/smashed_lung.png" data-off="chirbaby/smashed_lung.png" data-on="chirbaby/smashed_lung_on.png" alt=""><span>Pneumothorax</span></button>
+            <button type="button" class="tile" data-set="libre"><img src="chirbaby/manual_lung.png" data-off="chirbaby/manual_lung.png" data-on="chirbaby/manual_lung_on.png" alt=""><span>Réglages manuels</span></button>
+            <button type="button" class="tile" id="diaph"><img src="chirbaby/diaph_down.png" alt=""><span id="diaph-label">Fonctionnement normal</span></button>
+          </div>
+          <div class="group" id="g-mode">
+            <strong>Mode de ventilation</strong>
+            <label><input type="radio" name="mode" value="VC" checked> Volume contrôlé</label>
+            <label><input type="radio" name="mode" value="PC"> Pression contrôlée</label>
+          </div>
+          <div class="group" id="g-press" hidden>
+            <strong>Pression</strong>
+            <label><input type="radio" name="press" value="normal" checked> fonctionnement normal</label>
+            <label><input type="radio" name="press" value="basse"> pression trop basse</label>
+            <label><input type="radio" name="press" value="haute"> pression trop haute</label>
+          </div>
+          <div class="group" id="g-co2" hidden>
+            <strong>CO2</strong>
+            <label><input type="radio" name="co2" value="normal" checked> fonctionnement normal</label>
+            <label><input type="radio" name="co2" value="bas"> CO2 trop bas</label>
+            <label><input type="radio" name="co2" value="haut"> CO2 trop haut</label>
+          </div>
+          <div class="ie" id="ie" aria-live="polite"></div>
+        </div>
+        <div class="plots">
+          <div class="plot"><canvas id="c1" aria-label="Courbe de pression"></canvas></div>
+          <div class="plot"><canvas id="c2" aria-label="Courbe de volume"></canvas></div>
+          <div class="plot"><canvas id="c3" aria-label="Courbe de CO2 expiré ou de débit"></canvas></div>
+        </div>
+        <div class="readouts">
+          <div class="readout" style="color:#ffd400">Pression [cmH2O]<b id="r1">–</b></div>
+          <div class="readout" style="color:#ff3b30">Volume [L]<b id="r2">–</b></div>
+          <div class="readout" style="color:#2ecc40"><span id="r3l">CO2 expiré [mmHg]</span><b id="r3">–</b></div>
+          <div class="readout" style="color:#fff">Fréquence [BPM]<b id="r4">–</b></div>
+        </div>
+        <div class="cb-controls" id="sliders"></div>
+        <div class="cb-info" id="info" hidden></div>
+      </section>
+
+      <!-- Auscultation -->
+      <section class="cb-view cb-ausc" data-view="ausc" hidden>
+        <h2>Auscultation</h2>
+        <div class="organs">
+          <div class="organ">
+            <h3>Poumon</h3>
+            <div class="fig" id="fig-lung"><img src="chirbaby/poumon.png" alt="Schéma des poumons" width="560" height="596"></div>
+          </div>
+          <div class="organ">
+            <h3>Cœur</h3>
+            <div class="fig" id="fig-heart"><img src="chirbaby/coeur.png" alt="Schéma du cœur" width="380" height="485"></div>
+          </div>
+        </div>
+        <p class="ausc-now" id="now" aria-live="polite"></p>
+        <p class="ausc-note">Cliquez sur une zone pour écouter le son correspondant ; un second clic l'arrête. Sur le mannequin, ce sont des capteurs de force (FSR) reliés à une Arduino Nano ESP32 qui déclenchent ces sons en Wi-Fi quand l'anesthésiste pose le stéthoscope. Enregistrements : Torabi, Shirani et Reilly (2024), <a href="https://doi.org/10.48550/arXiv.2410.03280" rel="noopener">Manikin-Recorded Cardiopulmonary Sounds Dataset</a>.</p>
+      </section>
+
+      <!-- Informations -->
+      <section class="cb-view cb-help" data-view="help" hidden>
+        <h2>Information</h2>
+        <p>Cette interface commande le ChirBaby, un mannequin de nouveau-né sur lequel les chirurgiens s'entraînent à l'opération de l'atrésie de l'œsophage.</p>
+        <ul>
+          <li>Le simulateur respiratoire affiche la pression, le volume et le CO2 expiré (ou le débit en pression contrôlée), avec trois scénarios : volume normal, pneumothorax et réglages manuels.</li>
+          <li>Sur le vrai mannequin, le scénario choisi, la curarisation et la fréquence respiratoire sont envoyés en Wi-Fi à la carte ESP32 qui anime les organes.</li>
+          <li>Dans cette démo web, la liaison avec la carte est désactivée : tout le reste fonctionne comme dans l'application.</li>
+        </ul>
+        <p>Interface réalisée par des élèves ingénieurs de l'INSA Lyon en collaboration avec le Dr Frédérick Hameury (Hospices Civils de Lyon).</p>
+      </section>
+    </div>
+  </div>
+
+  <section class="cb-about">
+    <h2>Ce que montre la démo</h2>
+    <p>Les courbes sont calculées avec un modèle résistance-compliance du poumon : montée linéaire en volume contrôlé ou exponentielle en pression contrôlée pendant l'inspiration, puis décroissance exponentielle de constante de temps R·C à l'expiration, au-dessus de la PEEP. Le rapport I:E et la fréquence se mettent à jour en direct.</p>
+    <small>Portage web de l'application Python d'origine, réalisé pour ce portfolio.</small>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap"><span>© 2026 Amin Driss</span><a href="index.html#contact">Me contacter</a></div>
+</footer>
+
+<script>
+/* ---------- Navigation entre les écrans ---------- */
+const views = document.querySelectorAll(".cb-view");
+const barBtns = document.querySelectorAll(".cb-bar button");
+function go(name) {
+  views.forEach((v) => (v.hidden = v.dataset.view !== name));
+  const current = name === "help" ? "help" : "menu";
+  barBtns.forEach((b) => (b.dataset.go === current ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
+  if (name !== "ausc") stopSound();
+  running = name === "sim";
+  if (running) { resize(); last = performance.now(); requestAnimationFrame(loop); }
+}
+document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => go(b.dataset.go)));
+
+/* ---------- Simulateur respiratoire (portage de Chirbaby_VF.py) ---------- */
+const fs = 20, windowDuration = 10;
+// 0 fréquence, 1 temps d'inspiration, 2 % temps actif inspiration, 3 % temps actif expiration,
+// 4 R, 5 C, 6 PEEP, 7 volume fixe, 8 concentration alvéolaire de CO2
+const fonctionnementNormal = [0.67, 0.7, 0.9, 0.9, 25, 0.006, 10, 0.008, 30];
+const pneumothorax = [0.75, 0.5, 0.5, 0.9, 25, 0.006, 4, 0.025, 30];
+const Vinit_pneumothorax = 0.025, Calvinit_pneumothorax = 30;
+
+const SLIDERS = [
+  { id: "s11", label: "Concentration alvéolaire CO2 [mmHg]", min: 20, max: 30, val: 30, step: 0.1 },
+  { id: "s9", label: "Poids [kg]", min: 2, max: 6, val: 2, step: 0.1 },
+  { id: "s8", label: "Volume [L/kg]", min: 0, max: 0.1, val: 0.01, step: 0.001 },
+  { id: "s10", label: "Pression [cmH2O]", min: 10, max: 30, val: 20, step: 0.1 },
+  { id: "s7", label: "PEEP [cmH2O]", min: 0, max: 20, val: 10, step: 0.1 },
+  { id: "s6", label: "Compliance [L/cmH2O]", min: 0.01, max: 0.5, val: 0.1, step: 0.005 },
+  { id: "s5", label: "Résistance [cmH2O·s/L]", min: 5, max: 20, val: 10, step: 0.1 },
+  { id: "s4", label: "% temps actif expiration", min: 1 / fs, max: 1, val: 1, step: 0.01 },
+  { id: "s3", label: "% temps actif inspiration", min: 1 / fs, max: 1, val: 0.9, step: 0.01 },
+  { id: "s2", label: "Temps d'inspiration [s]", min: 0.5, max: 2, val: 2, step: 0.01 },
+  { id: "s1", label: "Fréquence [Hz]", min: 0.25, max: 1 / 3, val: 0.25, step: 0.001 }
+];
+const sliderBox = document.getElementById("sliders");
+sliderBox.innerHTML = SLIDERS.map((s) => `<label id="w-${s.id}"><span>${s.label}</span><output id="o-${s.id}"></output><input type="range" id="${s.id}" min="${s.min}" max="${s.max}" step="${s.step}" value="${s.val}"></label>`).join("");
+const sv = (id) => parseFloat(document.getElementById(id).value);
+function showSliderValues() { SLIDERS.forEach((s) => (document.getElementById("o-" + s.id).textContent = (+sv(s.id).toFixed(3)).toString())); }
+sliderBox.addEventListener("input", showSliderValues);
+showSliderValues();
+
+let sett = "mode libre", mode = "VC", press = "normal", co2 = "normal", curare = false;
+let params = [...fonctionnementNormal];
+
+const linspace = (a, b, n) => { n = Math.max(0, n | 0); if (n === 0) return []; if (n === 1) return [a]; const d = (b - a) / (n - 1); return Array.from({ length: n }, (_, i) => a + i * d); };
+const ones = (n) => Array(Math.max(0, n | 0)).fill(1);
+const I = (x) => Math.trunc(x + 1e-9);
+
+function currentParams() {
+  if (sett === "mode libre") return [sv("s1"), sv("s2"), sv("s3"), sv("s4"), sv("s5"), sv("s6"), sv("s7"), sv("s8"), sv("s11")];
+  const p = [...(sett === "pneumothorax" ? pneumothorax : fonctionnementNormal)];
+  if (sett === "pneumothorax") {
+    const poids = sv("s9");
+    p[7] = press === "normal" ? Vinit_pneumothorax : press === "basse" ? (10 - p[6]) * p[5] / poids : (27 - p[6]) * p[5] / poids;
+    p[8] = co2 === "normal" ? Calvinit_pneumothorax : co2 === "bas" ? 20 : 50;
+  }
+  return p;
+}
+
+function cycles(p) {
+  const poids = sv("s9");
+  const T = 1 / p[0], Ti = p[1], pa = p[2], ea = p[3], R = p[4], C = p[5], PEEP = p[6], fixe = p[7], Calv = p[8];
+  const Te = T - Ti, Tia = pa * Ti, RC = R * C;
+  const nIa = I(fs * pa * Ti), nIp = I(fs * (1 - pa) * Ti), nEa = I(fs * ea * Te), nEp = I(fs * (1 - ea) * Te);
+  let P, V, D;
+  if (mode === "VC") {
+    const Vmax = sett === "mode libre" ? sv("s8") * poids : fixe * poids;
+    P = [...ones(nEp).map(() => PEEP),
+         ...linspace(0, Tia, nIa + 1).map((t) => R * Vmax / Tia + Vmax / (Tia * C) * t + PEEP),
+         ...ones(nIp).map(() => Vmax / C + PEEP),
+         ...linspace(0, ea * Te, nEa + 1).map((t) => Vmax / C * Math.exp(-t / RC) + PEEP)];
+    const vin = linspace(0, Tia, I(fs * Tia) + 1).map((t) => Vmax / Tia * t);
+    V = [...Array(Math.max(0, nEp)).fill(0), ...vin, ...ones(nIp).map(() => vin[vin.length - 1] ?? 0),
+         ...linspace(0, ea * Te, nEa + 1).map((t) => Vmax * Math.exp(-t / RC))];
+    const din = linspace(0, Tia, nIa + 1).map((t) => Calv * (1 - Math.exp(-t / RC)));
+    const plateau = din[din.length - 1] ?? 0;
+    D = [...Array(Math.max(0, nEp)).fill(0), ...din, ...ones(nIp).map(() => plateau),
+         ...linspace(0, ea * Te, nEa + 1).map((t) => plateau * Math.exp(-t / RC))];
+  } else {
+    const Pmax = sett === "mode libre" ? sv("s10") * poids : 20;
+    P = [...ones(nEp).map(() => PEEP),
+         ...linspace(0, Tia, nIa).map((t) => PEEP + (Pmax - PEEP) * (1 - Math.exp(-t / RC))),
+         ...ones(nIp).map(() => Pmax),
+         ...linspace(0, ea * Te, nEa).map((t) => PEEP + (Pmax - PEEP) * Math.exp(-t / RC))];
+    V = [...Array(Math.max(0, nEp)).fill(0),
+         ...linspace(0, Tia, nIa).map((t) => (Pmax - PEEP) * C * (1 - Math.exp(-t / RC))),
+         ...ones(nIp).map(() => C * (Pmax - PEEP)),
+         ...linspace(0, ea * Te, nEa).map((t) => (Pmax - PEEP) * C * Math.exp(-t / RC))];
+    D = [...Array(Math.max(0, nEp)).fill(0),
+         ...linspace(0, Tia, nIa).map((t) => (Pmax - PEEP) / R * Math.exp(-t / RC)),
+         ...Array(Math.max(0, nIp)).fill(0),
+         ...linspace(0, ea * Te, nEa).map((t) => -(Pmax - PEEP) / R * Math.exp(-t / RC))];
+  }
+  return { P, V, D };
+}
+
+const gcd = (a, b) => (b ? gcd(b, a % b) : Math.abs(a) || 1);
+function updateIE(p) {
+  const Tt = I(1 / p[0] * 10), Ti = I(p[1] * 10), Te = Tt - Ti;
+  const n1 = Ti / gcd(Ti, Tt), n2 = Te / gcd(Te, Tt);
+  const modeTxt = mode === "VC" ? "Volume contrôlé" : "Pression contrôlée";
+  document.getElementById("ie").textContent = `${sett}\n${modeTxt}\nI:E  ${n1} : ${n2}`;
+}
+
+function updateUI() {
+  document.querySelectorAll(".tile[data-set]").forEach((t) => {
+    const on = (t.dataset.set === "normal" && sett === "fonctionnement normal") || (t.dataset.set === "pneumo" && sett === "pneumothorax") || (t.dataset.set === "libre" && sett === "mode libre");
+    t.classList.toggle("on", on);
+    t.setAttribute("aria-pressed", on);
+    const img = t.querySelector("img");
+    img.src = on ? img.dataset.on : img.dataset.off;
+  });
+  const libre = sett === "mode libre", pneumo = sett === "pneumothorax";
+  if (pneumo) { mode = "VC"; document.querySelector('input[name=mode][value=VC]').checked = true; }
+  document.getElementById("g-mode").hidden = pneumo;
+  document.getElementById("g-press").hidden = !pneumo;
+  document.getElementById("g-co2").hidden = !pneumo;
+  sliderBox.hidden = !libre;
+  document.getElementById("w-s8").hidden = mode !== "VC";
+  document.getElementById("w-s11").hidden = mode !== "VC";
+  document.getElementById("w-s10").hidden = mode !== "PC";
+  document.getElementById("r3l").textContent = mode === "VC" ? "CO2 expiré [mmHg]" : "Débit [L/s]";
+  const info = document.getElementById("info");
+  info.hidden = libre;
+  if (!libre) {
+    const p = currentParams();
+    info.textContent = `Fréquence : ${p[0].toFixed(2)} Hz    Temps d'inspiration : ${p[1].toFixed(2)} s    % inspiration actif : ${(p[2] * 100).toFixed(2)} %    % expiration actif : ${(p[3] * 100).toFixed(2)} %\nR : ${p[4].toFixed(2)} cmH2O·s/L    Compliance : ${p[5].toFixed(3)} L/cmH2O    PEEP : ${p[6].toFixed(2)} cmH2O`;
+  }
+}
+document.querySelectorAll(".tile[data-set]").forEach((t) => t.addEventListener("click", () => {
+  sett = { normal: "fonctionnement normal", pneumo: "pneumothorax", libre: "mode libre" }[t.dataset.set];
+  updateUI();
+}));
+document.querySelectorAll("input[name=mode]").forEach((r) => r.addEventListener("change", () => { mode = r.value; updateUI(); }));
+document.querySelectorAll("input[name=press]").forEach((r) => r.addEventListener("change", () => { press = r.value; }));
+document.querySelectorAll("input[name=co2]").forEach((r) => r.addEventListener("change", () => { co2 = r.value; }));
+document.getElementById("diaph").addEventListener("click", () => {
+  curare = !curare;
+  document.querySelector("#diaph img").src = curare ? "chirbaby/diaph_down_on.png" : "chirbaby/diaph_down.png";
+  document.getElementById("diaph-label").textContent = curare ? "Curarisation" : "Fonctionnement normal";
+  document.getElementById("diaph").setAttribute("aria-pressed", curare);
+});
+
+// Tracé
+const canvases = ["c1", "c2", "c3"].map((id) => document.getElementById(id));
+const colors = ["#ffd400", "#ff3b30", "#2ecc40"];
+const hist = [[], [], []];
+let tdata = [], index = 0, acc = 0, last = 0, running = false;
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  canvases.forEach((c) => { c.width = c.clientWidth * dpr; c.height = c.clientHeight * dpr; });
+}
+window.addEventListener("resize", resize);
+
+function draw(ci, series, lim) {
+  const c = canvases[ci], g = c.getContext("2d"), W = c.width, H = c.height, dpr = window.devicePixelRatio || 1;
+  g.fillStyle = "#000"; g.fillRect(0, 0, W, H);
+  const padL = 46 * dpr, padB = 18 * dpr, padT = 6 * dpr, padR = 8 * dpr;
+  const t1 = Math.max(windowDuration, tdata[tdata.length - 1] || 0), t0 = t1 - windowDuration;
+  let [lo, hi] = lim; if (!(hi > lo)) { hi = lo + 1; }
+  const X = (t) => padL + (t - t0) / windowDuration * (W - padL - padR);
+  const Y = (v) => padT + (1 - (v - lo) / (hi - lo)) * (H - padT - padB);
+  g.strokeStyle = "rgba(160,160,160,.45)"; g.setLineDash([4 * dpr, 4 * dpr]); g.lineWidth = 1 * dpr;
+  g.fillStyle = "#ddd"; g.font = `${10 * dpr}px Barlow, sans-serif`;
+  for (let k = 0; k <= 4; k++) { const v = lo + (hi - lo) * k / 4, y = Y(v); g.beginPath(); g.moveTo(padL, y); g.lineTo(W - padR, y); g.stroke(); g.fillText(+v.toPrecision(3), 4 * dpr, y + 3 * dpr); }
+  for (let s = Math.ceil(t0); s <= t1; s += 2) { const x = X(s); g.beginPath(); g.moveTo(x, padT); g.lineTo(x, H - padB); g.stroke(); g.fillText(s + " s", x - 8 * dpr, H - 4 * dpr); }
+  g.setLineDash([]); g.strokeStyle = colors[ci]; g.lineWidth = 2 * dpr; g.beginPath();
+  series.forEach((v, i) => { const x = X(tdata[i]), y = Y(v); i ? g.lineTo(x, y) : g.moveTo(x, y); });
+  g.stroke();
+}
+const lims = (a) => { const mx = Math.max(...a), mn = Math.min(...a), m = Math.abs(mx); return [mn - 0.05 * m, mx + 0.05 * m]; };
+
+function step() {
+  const p = currentParams();
+  const { P, V, D } = cycles(p);
+  const t = index / fs;
+  [P, V, D].forEach((arr, k) => hist[k].push(arr.length ? arr[index % arr.length] : 0));
+  tdata.push(t);
+  while (tdata.length && tdata[0] < t - windowDuration) { tdata.shift(); hist.forEach((h) => h.shift()); }
+  index++;
+  return { p, P, V, D };
+}
+function loop(now) {
+  if (!running) return;
+  acc += Math.min(500, now - last); last = now;
+  let res = null;
+  while (acc >= 1000 / fs) { res = step(); acc -= 1000 / fs; }
+  if (res) {
+    const { p, P, V, D } = res;
+    draw(0, hist[0], lims(P)); draw(1, hist[1], lims(V)); draw(2, hist[2], lims(D));
+    document.getElementById("r1").textContent = (+Math.abs(Math.max(...P)).toPrecision(3)).toString();
+    document.getElementById("r2").textContent = (+Math.abs(Math.max(...V)).toPrecision(3)).toString();
+    document.getElementById("r3").textContent = (+Math.abs(Math.max(...D)).toPrecision(3)).toString();
+    document.getElementById("r4").textContent = (+(p[0] * 60).toPrecision(3)).toString();
+    updateIE(p);
+  }
+  requestAnimationFrame(loop);
+}
+updateUI();
+
+/* ---------- Auscultation ---------- */
+const POINTS = [
+  { fig: "fig-lung", x: 29, y: 25, n: 1, snd: "F_N_LUA", label: "Poumon, zone 1" },
+  { fig: "fig-lung", x: 9, y: 60, n: 2, snd: "F_N_LUA", label: "Poumon, zone 2" },
+  { fig: "fig-lung", x: 32, y: 88, n: 3, snd: "F_N_LLA", label: "Poumon, zone 3" },
+  { fig: "fig-lung", x: 71, y: 25, n: 4, snd: "F_N_RUA", label: "Poumon, zone 4" },
+  { fig: "fig-lung", x: 91, y: 60, n: 5, snd: "F_N_RMA", label: "Poumon, zone 5" },
+  { fig: "fig-lung", x: 66, y: 88, n: 6, snd: "F_N_RLA", label: "Poumon, zone 6" },
+  { fig: "fig-heart", x: 12, y: 46, n: 1, snd: "F_AF_LUSB", label: "Cœur, zone 1", heart: true },
+  { fig: "fig-heart", x: 72, y: 86, n: 2, snd: "F_AF_A", label: "Cœur, zone 2", heart: true }
+];
+const audio = new Audio();
+let active = null;
+const offSrc = (p) => p.heart ? `chirbaby/coeur-${p.n}-rouge.png` : `chirbaby/poumon-${p.n}-bleu.png`;
+const onSrc = (p) => p.heart ? `chirbaby/coeur-${p.n}-bleu.png` : `chirbaby/poumon-${p.n}-blanc.png`;
+function stopSound() {
+  audio.pause();
+  if (active) { active.btn.querySelector("img").src = offSrc(active.p); active.btn.setAttribute("aria-pressed", "false"); }
+  active = null;
+  document.getElementById("now").textContent = "";
+}
+POINTS.forEach((p) => {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "pt"; b.style.left = p.x + "%"; b.style.top = p.y + "%";
+  b.setAttribute("aria-label", "Écouter : " + p.label); b.setAttribute("aria-pressed", "false");
+  b.innerHTML = `<img src="${offSrc(p)}" alt="">`;
+  b.addEventListener("click", () => {
+    const same = active && active.btn === b;
+    stopSound();
+    if (same) return;
+    audio.src = `chirbaby/${p.snd}.mp3`; audio.currentTime = 0; audio.play().catch(() => {});
+    b.querySelector("img").src = onSrc(p); b.setAttribute("aria-pressed", "true");
+    active = { btn: b, p };
+    document.getElementById("now").textContent = "Lecture : " + p.label;
+  });
+  document.getElementById(p.fig).appendChild(b);
+});
+audio.addEventListener("ended", stopSound);
+</script>
+</body>
+</html>
