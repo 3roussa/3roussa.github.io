@@ -1,0 +1,182 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Carte robot de combat 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Layout: plein écran 3D, panneau d'explication en bas à gauche, contrôles en bas */
+:root{
+--bg:#eef2f1; --fg:#14211f; --muted:#5b6b68; --panel:rgba(255,255,255,.86); --line:#c9d4d1; --accent:#0f7a5c;
+--display:"Space Grotesk",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1716;--fg:#e4ecea;--muted:#93a6a2;--panel:rgba(20,30,28,.86);--line:#2c3c39;--accent:#3fc79a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1716;--fg:#e4ecea;--muted:#93a6a2;--panel:rgba(20,30,28,.86);--line:#2c3c39;--accent:#3fc79a;color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);overflow:hidden}
+#stage{position:fixed;inset:0}
+canvas{display:block}
+.lbl{position:absolute;transform:translate(-50%,-100%);pointer-events:none;font:500 12px var(--body);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:4px 8px;white-space:nowrap;backdrop-filter:blur(6px)}
+.lbl b{color:var(--accent);font-family:var(--mono);font-weight:400;margin-right:6px}
+header{position:fixed;top:calc(12px + env(safe-area-inset-topB,0px));left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));pointer-events:none}
+h1{font:700 clamp(18px,2.4vw,26px)/1.15 var(--display);margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.panel{position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:min(380px,calc(100% - 32px));background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;backdrop-filter:blur(8px);font-size:13px;line-height:1.45}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 10px;font-family:var(--mono);font-size:11.5px}
+.flow span{border:1px solid var(--line);border-radius:4px;padding:2px 6px}
+.flow i{color:var(--accent);font-style:normal}
+.ctrl{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ctrl label{font-size:12px;color:var(--muted)}
+input[type=range]{accent-color:var(--accent);width:140px}
+button{font:500 12px var(--body);border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:6px;padding:4px 10px;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+body.still header,body.still .panel{display:none}
+body.still{--bg:#ffffff;--fg:#14211f;--panel:rgba(255,255,255,.9);--line:#c9d4d1;--accent:#0f7a5c}
+#photo{position:fixed;left:0;top:0;width:100vw;height:100vh;max-width:none;object-fit:contain;background:#fff;z-index:5}
+body.still,body.still *{cursor:none}
+body.photo{background:#fff}
+</style>
+<div id="stage"></div>
+<div id="labels"></div>
+<header>
+<h1>Électronique embarquée du robot de combat</h1>
+<div class="sub">Club électrique ENIS · empilement de trois étages sur entretoises laiton</div>
+</header>
+<div class="panel">
+<div class="flow"><span>Arduino</span><i>→</i><span>étage transistors</span><i>→</i><span>bobines des relais</span><i>→</i><span>moteurs</span></div>
+L'Arduino envoie les ordres de commande, la carte du haut les amplifie avec des transistors pour piloter les relais de la carte du bas, qui commutent le courant des moteurs.
+<div class="ctrl" style="margin-top:10px">
+<label for="ex">Vue éclatée</label><input id="ex" type="range" min="0" max="1" step="0.01" value="0.15">
+<button id="rot" type="button">Pause rotation</button>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const still = location.hash === '#still';
+if (still) document.body.classList.add('still');
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled = true;
+stage.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 200);
+camera.position.set(14, 11, 17);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 2.4, 0); controls.enableDamping = true; controls.autoRotate = !still; controls.autoRotateSpeed = 0.8;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a9a96, 0.75));
+const sun = new THREE.DirectionalLight(0xffffff, 0.85); sun.position.set(8,18,10); sun.castShadow = true;
+sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera,{left:-12,right:12,top:12,bottom:-12}); scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(60,60), new THREE.ShadowMaterial({opacity:0.12}));
+ground.rotation.x = -Math.PI/2; ground.position.y = -1.2; ground.receiveShadow = true; scene.add(ground);
+const M = (c, o={}) => new THREE.MeshStandardMaterial(Object.assign({color:c, roughness:.55, metalness:0}, o));
+const mat = {
+pcb: M(0x1f8a4c,{roughness:.5}), pad: M(0xd0d0d0,{metalness:.3,roughness:.35}), blue: M(0x2a8fd6), yellow: M(0xf2c62f),
+black: M(0x1b1b1b,{roughness:.4}), brass: M(0xd4ad4f,{metalness:.35,roughness:.35}), steel: M(0xc4c9cc,{metalness:.3,roughness:.3}),
+uno: M(0x0b6f8f), res: M(0x4fb7d9), white: M(0xf3f3f3), red: M(0xd63a2f), wblue: M(0x2a55b5), wyel: M(0xe8c22a), cap: M(0x3a7fd0)
+};
+function box(w,h,d,m,x,y,z,parent){const g=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);g.position.set(x,y,z);g.castShadow=g.receiveShadow=true;parent.add(g);return g;}
+function cyl(r,h,m,x,y,z,parent,rx=0,rz=0){const g=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,20),m);g.position.set(x,y,z);g.rotation.set(rx,0,rz);g.castShadow=true;parent.add(g);return g;}
+function wire(pts,m,r,parent){const c=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p)));const g=new THREE.Mesh(new THREE.TubeGeometry(c,48,r,8,false),m);g.castShadow=true;parent.add(g);return g;}
+const W=9.6, D=7.4, T=0.16;
+function perfboard(parent){
+box(W,T,D,mat.pcb,0,0,0,parent);
+const n=new THREE.InstancedMesh(new THREE.CylinderGeometry(.07,.07,.02,8),mat.pad,26*20);let i=0;const o=new THREE.Object3D();
+for(let a=0;a<26;a++)for(let b=0;b<20;b++){o.position.set(-W/2+.35+a*.355,T/2+.01,-D/2+.35+b*.355);o.updateMatrix();n.setMatrixAt(i++,o.matrix);}
+parent.add(n);
+[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>cyl(.17,.12,mat.steel,sx*(W/2-.3),T/2+.06,sz*(D/2-.3),parent));
+}
+function terminal(n,parent,x,z,rotY=0){
+const g=new THREE.Group();g.position.set(x,T/2,z);g.rotation.y=rotY;parent.add(g);
+box(.5*n,.85,.75,mat.blue,0,.42,0,g);
+for(let k=0;k<n;k++)cyl(.14,.05,mat.steel,-.25*(n-1)+.5*k,.86,0,g);
+return g;
+}
+/* Étage 1 : carte de puissance à relais */
+const bottom = new THREE.Group(); scene.add(bottom); perfboard(bottom);
+box(2.0,1.9,1.7,mat.yellow,-2.7,T/2+.95,-1.4,bottom); box(2.0,1.9,1.7,mat.yellow,-2.7,T/2+.95,.5,bottom);
+box(1.8,2.1,2.6,mat.black,-.2,T/2+1.05,-.7,bottom); box(1.8,2.1,2.6,mat.black,1.9,T/2+1.05,-.7,bottom);
+[-3.6,-1.7,.2,2.3].forEach(x=>terminal(2,bottom,x,3.0));
+terminal(6,bottom,4.1,-.4,Math.PI/2);
+cyl(.28,.9,mat.cap,3.6,T/2+.45,2.6,bottom);
+/* Étage 2 : Arduino monté sous la carte du haut */
+const mid = new THREE.Group(); scene.add(mid);
+box(6.9,.16,5.3,mat.uno,0,0,0,mid);
+box(1.2,.55,1.6,mat.steel,-3.0,-.35,-1.4,mid);          // USB
+box(1.4,.55,.9,mat.black,-3.0,-.35,1.6,mid);            // jack
+box(4.6,.85,.25,mat.black,.6,.5,-2.45,mid); box(4.0,.85,.25,mat.black,.9,.5,2.45,mid); // connecteurs
+box(2.2,.35,.7,mat.black,.6,-.25,.2,mid);              // microcontrôleur
+/* Étage 3 : carte de commande à transistors */
+const topB = new THREE.Group(); scene.add(topB); perfboard(topB);
+const reg=new THREE.Group();reg.position.set(-2.6,T/2,-2.8);topB.add(reg);
+box(1.0,.9,.45,mat.black,0,.45,0,reg);box(1.0,.7,.06,mat.steel,0,1.1,-.2,reg);
+/* Transistor 2N2222 en boîtier TO-92 : corps en D, face plate marquée, trois pattes E-B-C */
+const to92Geo=(()=>{const s=new THREE.Shape();const r=.24;s.moveTo(-r*.92,0);s.absarc(0,-.06,r,Math.PI-.25,.25,true);s.lineTo(-r*.92,0);
+const g=new THREE.ExtrudeGeometry(s,{depth:.48,bevelEnabled:true,bevelThickness:.02,bevelSize:.015,bevelSegments:2,curveSegments:24});g.rotateX(-Math.PI/2);return g;})();
+const markTex=(()=>{const c=document.createElement('canvas');c.width=256;c.height=256;const x=c.getContext('2d');x.fillStyle='#1b1b1b';x.fillRect(0,0,256,256);
+x.fillStyle='#d9d9d9';x.textAlign='center';x.font='bold 54px Arial';x.fillText('2N',128,96);x.fillText('2222',128,160);x.font='32px Arial';x.fillText('A 331',128,215);
+const t=new THREE.CanvasTexture(c);t.anisotropy=4;return t;})();
+const markMat=new THREE.MeshStandardMaterial({map:markTex,roughness:.5});
+const legGeo=new THREE.BoxGeometry(.035,.32,.02);
+function to92(x,z){const g=new THREE.Group();g.position.set(x,T/2,z);topB.add(g);
+const b=new THREE.Mesh(to92Geo,mat.black);b.position.y=.3;b.castShadow=true;g.add(b);
+const f=new THREE.Mesh(new THREE.PlaneGeometry(.42,.46),markMat);f.position.set(0,.3+.24,.006+.02);g.add(f);
+[-.1,0,.1].forEach(dx=>{const l=new THREE.Mesh(legGeo,mat.steel);l.position.set(dx,.16,-.06);g.add(l);});
+return g;}
+const tr=[[-1.6,-1.6],[1.3,-1.8],[-1.6,0],[1.3,0],[-1.6,1.6],[1.3,1.6]];
+tr.forEach(([x,z])=>{
+[-.33,.33].forEach(dx=>to92(x+dx,z));
+cyl(.08,.6,mat.res,x+.9,T/2+.1,z+.2,topB,0,Math.PI/2);
+cyl(.07,.45,mat.black,x-.1,T/2+.1,z-.55,topB,0,Math.PI/2);
+});
+wire([[-1.2,.1,-1],[-.3,.5,-.4],[.6,.5,.4],[1.4,.1,1]],mat.wyel,.05,topB);
+wire([[-2.4,.1,-1.6],[-2.2,.6,0],[-2.3,.5,1.4],[-1.9,.1,2.6]],mat.white,.05,topB);
+wire([[2.4,.1,-2],[2.8,.6,0],[2.6,.5,1.8],[1.6,.1,2.7]],mat.white,.05,topB);
+wire([[-.6,.1,-2.6],[0,.5,-2.2],[.4,.5,-.6],[0,.1,.6]],mat.res,.05,topB);
+terminal(2,topB,-4.1,-1.3,Math.PI/2); terminal(2,topB,-4.1,.3,Math.PI/2);
+terminal(6,topB,1.0,3.05);
+/* Broches mâles de la carte du haut, enfichées dans les connecteurs de l'Arduino */
+{const pg=new THREE.BoxGeometry(.06,.9,.06);const rows=[[ -1.7,-2.45,18],[-1.1,2.45,16]];let n=0;rows.forEach(r=>n+=r[2]);
+const im=new THREE.InstancedMesh(pg,mat.steel,n);const o=new THREE.Object3D();let i=0;
+rows.forEach(([x0,z,c])=>{for(let k=0;k<c;k++){o.position.set(x0+.254*k+.6,-T/2-.45,z);o.updateMatrix();im.setMatrixAt(i++,o.matrix);}});topB.add(im);
+box(4.6,.12,.3,mat.black,.6,-T/2-.06,-2.45,topB);box(4.0,.12,.3,mat.black,.9,-T/2-.06,2.45,topB);}
+const hdr=new THREE.Group();hdr.position.set(-2.6,T/2,2.9);topB.add(hdr);box(1.3,.25,.3,mat.black,0,.12,0,hdr);for(let k=0;k<5;k++)box(.06,.7,.06,mat.steel,-.5+.25*k,.45,0,hdr);
+/* Entretoises et liaisons */
+const posts=[];
+[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>{const p=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,1,6),mat.brass);p.position.set(sx*(W/2-.3),0,sz*(D/2-.3));p.castShadow=true;scene.add(p);posts.push(p);});
+let link=[];
+const labels=[
+{g:topB, p:[0,1.2,0], t:'Carte de commande', n:'3'},
+{g:topB, p:[1.3,.9,1.6], t:'Transistors 2N2222 (TO-92)', n:'·'},
+{g:mid, p:[-3.2,.1,2.6], t:'Arduino (enfiché par broches)', n:'2'},
+{g:bottom, p:[2.8,.9,3.2], t:'Carte de puissance à relais', n:'1'},
+{g:null, p:[W/2-.3,0,D/2-.3], t:'Entretoises laiton', n:'·'}
+];
+const lbHost=document.getElementById('labels');
+labels.forEach(l=>{l.el=document.createElement('div');l.el.className='lbl';l.el.innerHTML='<b>'+l.n+'</b>'+l.t;lbHost.appendChild(l.el);});
+const ex=document.getElementById('ex');
+function layout(e){
+const gap=4.9+e*3.0;
+bottom.position.y=0; topB.position.y=gap; mid.position.y=gap-1.45-e*1.6;
+posts.forEach(p=>{p.scale.y=gap-T; p.position.y=gap/2;});
+link.forEach(w=>scene.remove(w));
+link=[0,1,2,3,4,5].map(k=>{const x=4.4,z=-1.65+k*.5+ .05;
+return wire([[x,.9,z-.4+.0],[5.3+k*.08,gap*.35,z],[5.3+k*.08,gap*.7,z],[1.0-1.25+k*.5,gap+.9,3.05]],mat.black,.06,scene);});
+labels[3].p=[W/2-.3,gap/2,D/2-.3];
+}
+ex.addEventListener('input',()=>layout(+ex.value));
+layout(still?0.1:+ex.value);
+document.getElementById('rot').addEventListener('click',e=>{controls.autoRotate=!controls.autoRotate;e.target.textContent=controls.autoRotate?'Pause rotation':'Reprendre la rotation';});
+if(matchMedia('(prefers-reduced-motion: reduce)').matches)controls.autoRotate=false;
+function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h);camera.aspect=w/h;
+const far = w<600 ? 1.45 : 1; camera.position.setLength(25*far); camera.updateProjectionMatrix();}
+addEventListener('resize',resize);resize();
+const v=new THREE.Vector3();
+function tick(){
+controls.update(); renderer.render(scene,camera);
+labels.forEach(l=>{v.set(...l.p); if(l.g) l.g.localToWorld(v); v.project(camera);
+l.el.style.left=((v.x+1)/2*innerWidth)+'px'; l.el.style.top=((1-v.y)/2*innerHeight)+'px';});
+requestAnimationFrame(tick);
+}
+tick();
+</script>
+</body></html>

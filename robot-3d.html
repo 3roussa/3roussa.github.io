@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Robot de combat 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f5f6;--fg:#15201c;--muted:#5d6b66;--panel:rgba(255,255,255,.88);--line:#cfd8d5;--accent:#2f9e36}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101614;--fg:#e5ece9;--muted:#93a39d;--panel:rgba(22,30,27,.88);--line:#2d3a35;--accent:#5fd065}}
+:root[data-theme="dark"]{--bg:#101614;--fg:#e5ece9;--muted:#93a39d;--panel:rgba(22,30,27,.88);--line:#2d3a35;--accent:#5fd065}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:Inter,system-ui,sans-serif;overflow:hidden}
+#stage{position:fixed;inset:0}
+canvas{display:block}
+header{position:fixed;top:14px;left:16px;right:16px;pointer-events:none}
+h1{margin:0;font:600 clamp(17px,2.3vw,24px)/1.2 Inter,system-ui,sans-serif}
+.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.panel{position:fixed;left:16px;bottom:16px;max-width:calc(100% - 32px);display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;backdrop-filter:blur(8px);font-size:13px}
+button{font:500 13px Inter,system-ui,sans-serif;border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:7px;padding:6px 12px;cursor:pointer}
+button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+body.still header,body.still .panel{display:none}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<header>
+<h1>Robot de combat — Club électrique ENIS</h1>
+<div class="sub">Modèle 3D reconstitué à partir des photos du robot · faites glisser pour tourner</div>
+</header>
+<div class="panel">
+<button id="lift">Lever la pelle</button>
+<button id="spin" class="on">Rotation auto</button>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/environments/RoomEnvironment.js"></script>
+<script>
+(async function(){
+const still=/still/.test(location.search);
+if(still)document.body.classList.add('still');
+try{await document.fonts.load('120px "Pirata One"');}catch(e){}
+const stage=document.getElementById('stage');
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=0.75;
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+stage.appendChild(renderer.domElement);
+const scene=new THREE.Scene();
+const bgCol=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#f3f5f6';
+scene.background=new THREE.Color(still?'#ffffff':bgCol);
+const pm=new THREE.PMREMGenerator(renderer);
+scene.environment=pm.fromScene(new THREE.RoomEnvironment(),0.04).texture;
+const camera=new THREE.PerspectiveCamera(30,innerWidth/innerHeight,1,2000);
+camera.position.set(-95,85,125);
+const controls=new THREE.OrbitControls(camera,renderer.domElement);
+controls.target.set(0,11,6);controls.enableDamping=true;
+controls.autoRotate=!still;controls.autoRotateSpeed=0.8;
+controls.maxPolarAngle=Math.PI*0.49;controls.minDistance=60;controls.maxDistance=320;
+window.camera=camera;window.controls=controls;
+scene.add(new THREE.HemisphereLight(0xffffff,0x9aa4ae,0.3));
+const key=new THREE.DirectionalLight(0xffffff,1.2);key.position.set(-60,140,90);key.castShadow=true;
+key.shadow.mapSize.set(2048,2048);Object.assign(key.shadow.camera,{left:-70,right:70,top:70,bottom:-70,near:10,far:400});key.shadow.bias=-0.0004;scene.add(key);
+const fill=new THREE.DirectionalLight(0xe6eeff,0.45);fill.position.set(110,60,-40);scene.add(fill);
+const floor=new THREE.Mesh(new THREE.CircleGeometry(200,64),new THREE.ShadowMaterial({opacity:0.25}));
+floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+function noiseTex(base,spark,n){const c=document.createElement('canvas');c.width=c.height=512;const g=c.getContext('2d');
+g.fillStyle=base;g.fillRect(0,0,512,512);
+for(let i=0;i<n;i++){const v=Math.random();g.fillStyle=v>.7?spark:(v>.35?'rgba(255,255,255,.08)':'rgba(0,0,0,.18)');g.fillRect(Math.random()*512,Math.random()*512,1.6,1.6);}
+const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.encoding=THREE.sRGBEncoding;return t;}
+const M=(o)=>new THREE.MeshStandardMaterial(Object.assign({roughness:.5,metalness:.1,envMapIntensity:.4},o));
+const green=M({color:0x1fa31f,roughness:.42,metalness:0,envMapIntensity:.25});
+const alu=M({color:0xdde1e3,roughness:.32,metalness:.55,envMapIntensity:.9});
+const black=M({color:0x0d0e0f,roughness:.55,metalness:.15,envMapIntensity:.25});
+const topTex=noiseTex('#1d3a2a','rgba(150,220,170,.45)',26000);topTex.repeat.set(1,1);
+const topMat=M({map:topTex,roughness:.8,metalness:.15});
+const red=M({color:0xc9271b,roughness:.45});
+const steel=M({color:0xc8cdd1,roughness:.2,metalness:1,envMapIntensity:1});
+const dark=M({color:0x2a2d30,roughness:.6});
+function box(w,h,d,mat,x,y,z,parent=scene){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;parent.add(m);return m;}
+function cyl(r,h,mat,x,y,z,axis,parent=scene,seg=32){const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,seg),mat);m.position.set(x,y,z);
+if(axis==='x')m.rotation.z=Math.PI/2;if(axis==='z')m.rotation.x=Math.PI/2;m.castShadow=m.receiveShadow=true;parent.add(m);return m;}
+function prism(pts,width,mat,parent=scene,x=0){const s=new THREE.Shape();pts.forEach(([z,y],i)=>i?s.lineTo(z,y):s.moveTo(z,y));s.closePath();
+const g=new THREE.ExtrudeGeometry(s,{depth:width,bevelEnabled:false});g.rotateY(-Math.PI/2);g.translate(width/2+x,0,0);
+const m=new THREE.Mesh(g,mat);m.castShadow=m.receiveShadow=true;parent.add(m);return m;}
+const W=40, ZF=24, ZB=-24, Y0=0.9, YS=8, YT=22;
+prism([[ZB,Y0],[ZF,Y0],[ZF,YS],[ZB,YS]],W,alu);
+box(W-1,Y0,2*ZF-2,dark,0,Y0/2,0); // ombre sous châssis
+prism([[ZB,YS],[ZF,YS],[ZF,YT],[ZB+4.5,YT]],W,green);
+box(W+0.2,1.1,2*ZF+0.2,alu,0,YS+0.2,0);
+const tp=new THREE.Shape();const zb=ZB+4.5;
+tp.moveTo(-W/2,-zb);tp.lineTo(W/2,-zb);tp.lineTo(W/2,-ZF);tp.lineTo(-W/2,-ZF);tp.closePath();
+const hole=new THREE.Path();hole.moveTo(-3,6);hole.lineTo(10,6);hole.lineTo(10,-8);hole.lineTo(-3,-8);hole.closePath();tp.holes.push(hole);
+const tg=new THREE.ExtrudeGeometry(tp,{depth:0.6,bevelEnabled:false});tg.rotateX(-Math.PI/2);
+const topPlate=new THREE.Mesh(tg,topMat);topPlate.position.y=YT;topPlate.castShadow=topPlate.receiveShadow=true;scene.add(topPlate);
+[[-18,-17],[18,-17],[-18,22],[18,22],[-18,3],[18,3],[0,22]].forEach(([x,z])=>cyl(0.7,0.4,steel,x,YT+0.75,z,'y',scene,16));
+const st=document.createElement('canvas');st.width=st.height=256;const sg=st.getContext('2d');
+sg.fillStyle='#f4f6f5';sg.beginPath();sg.arc(128,128,124,0,7);sg.fill();
+sg.strokeStyle='#3a9a3c';sg.lineWidth=10;sg.beginPath();sg.arc(128,128,58,0.6,5.6);sg.stroke();
+sg.fillStyle='#3a9a3c';sg.font='600 40px Inter, sans-serif';sg.textAlign='center';sg.fillText('EE',140,142);
+const stTex=new THREE.CanvasTexture(st);stTex.encoding=THREE.sRGBEncoding;
+const sticker=new THREE.Mesh(new THREE.CircleGeometry(2.6,40),M({map:stTex,roughness:.6}));
+sticker.rotation.x=-Math.PI/2;sticker.position.set(-11,YT+0.62,7);scene.add(sticker);
+box(13,0.1,14,dark,3.5,YT+0.02,1); // fond du logement
+box(12.6,0.3,4,steel,3.5,YT+0.2,6.6); // tôle inox
+box(8,1.4,9,red,4.5,YT+0.75,0.5);
+cyl(0.45,9,steel,3.5,YT+1.6,-1,'x');
+[-0.8,7.8].forEach(x=>cyl(0.9,0.8,steel,x,YT+1.6,-1,'x',scene,6));
+const tc=document.createElement('canvas');tc.width=1024;tc.height=400;const tx=tc.getContext('2d');
+tx.font='380px "Pirata One", Georgia, serif';tx.textAlign='center';tx.textBaseline='middle';
+tx.lineJoin='round';tx.strokeStyle='#ffffff';tx.lineWidth=26;tx.strokeText('CEE',512,215);
+tx.fillStyle='#111';tx.fillText('CEE',512,215);
+const tt=new THREE.CanvasTexture(tc);tt.encoding=THREE.sRGBEncoding;tt.anisotropy=8;
+const label=new THREE.Mesh(new THREE.PlaneGeometry(27,10.5),new THREE.MeshStandardMaterial({map:tt,transparent:true,roughness:.5}));
+label.position.set(0,15.3,ZF+0.06);scene.add(label);
+const PY=YT+3.2, PZ=-17.5;
+[-17,17].forEach(x=>{[-1.6,1.6].forEach(dx=>{
+const s=new THREE.Shape();s.moveTo(-3,0);s.lineTo(3,0);s.lineTo(1.6,3.6);s.absarc(0,3.2,1.6,0,Math.PI,false);s.lineTo(-3,0);
+const g=new THREE.ExtrudeGeometry(s,{depth:0.6,bevelEnabled:false});g.rotateY(Math.PI/2);
+const m=new THREE.Mesh(g,black);m.position.set(x+dx-0.3,YT+0.6,PZ);m.castShadow=true;scene.add(m);});
+cyl(1.7,0.6,black,x-2.6,PY,PZ,'x');cyl(1.7,0.6,black,x+2.6,PY,PZ,'x');
+cyl(0.55,7,steel,x,PY,PZ,'x');});
+const frame=new THREE.Group();frame.position.set(0,PY,PZ);scene.add(frame);
+const T=1.8, ZV=ZF+2.2-PZ; // position z des montants (relatif)
+const yTop=0, yBot=2.2-PY;
+[-17,0,17].forEach(x=>{
+box(T,T,ZV,black,x,yTop,ZV/2,frame);                 // longeron supérieur
+box(T,yTop-yBot,T,black,x,(yTop+yBot)/2,ZV,frame);   // montant avant
+const g=box(T*0.9,T*0.9,4,black,x,yTop-1.6,ZV-1.6,frame);g.rotation.x=Math.PI/4; // gousset
+});
+box(34+T,T,T,black,0,yTop,0,frame);                     // traverse arrière
+const sc=box(46,0.7,17,black,0,yBot-0.9,ZV+8.6,frame);sc.rotation.x=0.075;
+box(46,5.5,0.6,black,0,yBot+1.8,ZV+0.4,frame);          // tôle verticale
+const lk=box(1.2,6,1.2,steel,3.5,-3.1,PZ*-1-1,frame);
+let lift=0,liftTarget=0;
+document.getElementById('lift').onclick=e=>{liftTarget=liftTarget?0:1;e.target.textContent=liftTarget?'Abaisser la pelle':'Lever la pelle';e.target.classList.toggle('on',!!liftTarget);};
+document.getElementById('spin').onclick=e=>{controls.autoRotate=!controls.autoRotate;e.target.classList.toggle('on',controls.autoRotate);};
+window.setLift=v=>{lift=liftTarget=v;};
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+(function tick(){lift+=(liftTarget-lift)*0.08;frame.rotation.x=-0.42*lift;controls.update();renderer.render(scene,camera);requestAnimationFrame(tick);})();
+window.ready=true;
+})();
+</script>
+</body>
+</html>
