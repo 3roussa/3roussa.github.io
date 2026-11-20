@@ -62,6 +62,15 @@ function localLink(url) {
   return key ? LINKS[key] : url;
 }
 
+// Les photos des projets sont servies par la médiathèque du portfolio Wix,
+// à la taille utile (miniature ou grande image).
+function imageUrl(file, size) {
+  const m = String(file).match(/^([0-9a-f]+)\.(\w+)$/i);
+  if (!m) return "images/" + file;
+  const id = `b056e6_${m[1]}~mv2.${m[2]}`;
+  return `https://static.wixstatic.com/media/${id}/v1/fit/w_${size},h_${size},q_85/${m[1]}.jpg`;
+}
+
 // Prépare un projet : couverture, galerie, métadonnées.
 function prepare(raw) {
   const meta = META[raw.s] || { id: raw.s, year: "", tags: [], summary: "" };
@@ -70,18 +79,14 @@ function prepare(raw) {
   const items = raw.im.filter((i) => i[0] && i[0] !== "https:");
   const coverItem = items.find((i) => i[2] == null) || items[0];
   const gallery = items.filter((i) => i !== coverItem && !isFileName(i[1]));
-  const pic = (i) => ({ src: "images/" + i[0], alt: plain(i[1]), w: i[2], h: i[3] });
+  const pic = (i) => ({ src: imageUrl(i[0], 1600), thumb: imageUrl(i[0], 560), alt: plain(i[1]), w: i[2], h: i[3] });
   return { ...meta, raw, title: plain(raw.t), cover: coverItem ? pic(coverItem) : null, gallery: gallery.map(pic), details: raw.det.map(([k, v]) => [k, plain(v)]) };
 }
 
-// Un fichier par projet : data/p1.json … data/p8.json (ordre d'affichage)
-const PROJECT_COUNT = 8;
 async function loadProjects() {
-  const files = await Promise.all(Array.from({ length: PROJECT_COUNT }, (_, i) =>
-    fetch(`data/p${i + 1}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null)));
-  const list = files.filter(Boolean);
-  if (!list.length) throw new Error("données introuvables");
-  return list.map(prepare);
+  const res = await fetch("data/projects.json");
+  if (!res.ok) throw new Error("data/projects.json introuvable");
+  return (await res.json()).map(prepare);
 }
 
 /* ---------- Accueil ---------- */
@@ -94,7 +99,7 @@ async function renderHome() {
     <li class="project-row" data-tags="${p.tags.join(" ")}">
       <a href="projet.html?p=${p.id}">
         <span class="year">${esc(p.year)}</span>
-        <span class="thumb">${p.cover ? `<img src="${p.cover.src}" alt="" loading="lazy" width="440" height="330">` : ""}</span>
+        <span class="thumb">${p.cover ? `<img src="${p.cover.thumb}" alt="" loading="lazy" width="440" height="330">` : ""}</span>
         <span class="body">
           <h3>${esc(p.title)}</h3>
           <p>${esc(p.summary)}</p>
@@ -223,7 +228,7 @@ async function renderProject() {
         <div class="gallery">
           ${media.map((m, k) => m.video
             ? `<figure><video class="is-video" src="${m.video}" controls muted loop playsinline preload="metadata"></video><figcaption>${esc(m.alt)}</figcaption></figure>`
-            : `<figure><button type="button" data-k="${k}" aria-label="Agrandir : ${esc(m.alt)}"><img src="${m.src}" alt="${esc(m.alt)}" loading="lazy" ${m.w ? `width="${m.w}" height="${m.h}"` : ""}></button><figcaption>${esc(m.alt)}</figcaption></figure>`).join("")}
+            : `<figure><button type="button" data-k="${k}" aria-label="Agrandir : ${esc(m.alt)}"><img src="${m.thumb}" alt="${esc(m.alt)}" loading="lazy" ${m.w ? `width="${m.w}" height="${m.h}"` : ""}></button><figcaption>${esc(m.alt)}</figcaption></figure>`).join("")}
         </div>
       </section>` : ""}
       <nav class="p-nav" aria-label="Autres projets">
