@@ -12,7 +12,10 @@ const META = {
   },
   "projets-copr-insa-lyon": {
     id: "copr-insa-lyon", year: "2025", tags: ["meca", "embarque"],
-    summary: "Chariot de batterie pour l'écurie Formula Student de l'INSA et module de signes vitaux d'un simulateur de nouveau-né."
+    summary: "Chariot de batterie pour l'écurie Formula Student de l'INSA et module de signes vitaux d'un simulateur de nouveau-né.",
+    extra: [
+      { link: "chirbaby.html", label: "Voir la démo interactive de l'interface ChirBaby", note: "Simulateur respiratoire et auscultation, dans votre navigateur" }
+    ]
   },
   "système-dasservissement-robotisé": {
     id: "robots-club-enis", year: "2022 – 2024", tags: ["elec", "embarque"],
