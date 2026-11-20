@@ -9,31 +9,32 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/style.css?v=7">
+<link rel="stylesheet" href="assets/style.css?v=8">
+<script src="assets/i18n.js?v=1"></script>
 </head>
 <body>
-<a class="skip" href="#project">Aller au contenu</a>
+<a class="skip" href="#project" data-en="Skip to content">Aller au contenu</a>
 <header class="site-head">
   <div class="wrap">
     <a class="brand" href="index.html">Amin Driss</a>
-    <nav class="nav" aria-label="Navigation principale">
-      <a href="index.html#projets" class="keep">Projets</a>
-      <a href="index.html#parcours">Parcours</a>
+    <nav class="nav" aria-label="Navigation principale" data-en-aria-label="Main navigation">
+      <a href="index.html#projets" class="keep" data-en="Projects">Projets</a>
+      <a href="index.html#parcours" data-en="Background">Parcours</a>
       <a href="index.html#contact">Contact</a>
       <a class="nav-cv" href="CV_Amin_Driss.pdf" download>CV (PDF)</a>
     </nav>
   </div>
 </header>
-<main id="project"><div class="wrap"><p class="loading">Chargement du projet…</p></div></main>
-<dialog class="viewer" id="viewer" aria-label="Visionneuse d'images">
+<main id="project"><div class="wrap"><p class="loading" data-en="Loading project…">Chargement du projet…</p></div></main>
+<dialog class="viewer" id="viewer" aria-label="Visionneuse d'images" data-en-aria-label="Image viewer">
   <div class="inner"><img alt=""><p></p></div>
-  <button class="close" type="button" aria-label="Fermer">×</button>
-  <button class="prev" type="button" aria-label="Image précédente">‹</button>
-  <button class="next" type="button" aria-label="Image suivante">›</button>
+  <button class="close" type="button" aria-label="Fermer" data-en-aria-label="Close">×</button>
+  <button class="prev" type="button" aria-label="Image précédente" data-en-aria-label="Previous image">‹</button>
+  <button class="next" type="button" aria-label="Image suivante" data-en-aria-label="Next image">›</button>
 </dialog>
 <footer class="site-foot">
-  <div class="wrap"><span>© 2026 Amin Driss</span><a href="index.html#contact">Me contacter</a></div>
+  <div class="wrap"><span>© 2026 Amin Driss</span><a href="index.html#contact" data-en="Contact me">Me contacter</a></div>
 </footer>
-<script src="assets/site.js?v=7"></script>
+<script src="assets/site.js?v=8"></script>
 </body>
 </html>

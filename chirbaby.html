@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Démo ChirBaby | Amin Driss</title>
+<title data-en="ChirBaby demo | Amin Driss">Démo ChirBaby | Amin Driss</title>
 <meta name="description" content="Démo interactive de l'interface du simulateur de nouveau-né ChirBaby : simulateur respiratoire et auscultation (projet COPR, INSA Lyon).">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/style.css?v=7">
+<link rel="stylesheet" href="assets/style.css?v=8">
+<script src="assets/i18n.js?v=1"></script>
 <style>
   /* Couleurs reprises de l'interface Tkinter d'origine */
   .cb { --cb-bar: #212121; --cb-bg: #434343; --cb-light: #d3d3d3; --cb-pink: #e5007e; --cb-blue: #5b9bd5; }
@@ -99,8 +100,8 @@
 <header class="site-head">
   <div class="wrap">
     <a class="brand" href="index.html">Amin Driss</a>
-    <nav class="nav" aria-label="Navigation principale">
-      <a href="index.html#projets" class="keep">Projets</a>
+    <nav class="nav" aria-label="Navigation principale" data-en-aria-label="Main navigation">
+      <a href="index.html#projets" class="keep" data-en="Projects">Projets</a>
       <a href="index.html#contact">Contact</a>
       <a class="nav-cv" href="CV_Amin_Driss.pdf" download>CV (PDF)</a>
     </nav>
@@ -108,10 +109,10 @@
 </header>
 
 <main class="wrap cb">
-  <a class="back" href="projet.html?p=copr-insa-lyon">Retour aux projets COPR</a>
+  <a class="back" href="projet.html?p=copr-insa-lyon" data-en="Back to the COPR projects">Retour aux projets COPR</a>
   <header class="cb-intro">
-    <h1>Démo de l'interface ChirBaby</h1>
-    <p>Version web de l'interface Python (Tkinter et Matplotlib) développée pour le simulateur de nouveau-né ChirBaby 2.0, avec les Hospices Civils de Lyon. Elle reprend les mêmes modèles de ventilation et les mêmes enregistrements d'auscultation. Choisissez un module ci-dessous.</p>
+    <h1 data-en="ChirBaby interface demo">Démo de l'interface ChirBaby</h1>
+    <p data-en="Web version of the Python interface (Tkinter and Matplotlib) developed for the ChirBaby 2.0 newborn simulator, with the Hospices Civils de Lyon. It uses the same ventilation models and the same auscultation recordings. The interface itself is in French, as in the original. Choose a module below.">Version web de l'interface Python (Tkinter et Matplotlib) développée pour le simulateur de nouveau-né ChirBaby 2.0, avec les Hospices Civils de Lyon. Elle reprend les mêmes modèles de ventilation et les mêmes enregistrements d'auscultation. Choisissez un module ci-dessous.</p>
   </header>
 
   <div class="cb-app">
@@ -217,7 +218,7 @@
 </main>
 
 <footer class="site-foot">
-  <div class="wrap"><span>© 2026 Amin Driss</span><a href="index.html#contact">Me contacter</a></div>
+  <div class="wrap"><span>© 2026 Amin Driss</span><a href="index.html#contact" data-en="Contact me">Me contacter</a></div>
 </footer>
 
 <script>
