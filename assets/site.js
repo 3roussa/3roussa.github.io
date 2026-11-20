@@ -73,7 +73,7 @@ function imageUrl(file, size) {
 
 // Prépare un projet : couverture, galerie, métadonnées.
 function prepare(raw) {
-  const meta = META[raw.s] || { id: raw.s, year: "", tags: [], summary: "" };
+  const meta = META[String(raw.s).normalize("NFC")] || { id: raw.s, year: "", tags: [], summary: "" };
   // un nom du type « pfe_banc_powertrain » est un nom de fichier : doublon de la couverture
   const isFileName = (n) => /^[a-z0-9]+(_[a-z0-9]+)+$/i.test(n || "");
   const items = raw.im.filter((i) => i[0] && i[0] !== "https:");
