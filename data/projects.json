@@ -1,0 +1,678 @@
+[
+ {
+  "s": "banc-de-test-véhicules-électriques",
+  "t": "Banc d'essai PowerTrain – Projet de fin d'études chez Metacar Mobility Systems",
+  "d": "▶ **Voir la démo interactive de l'interface de supervision** : https://medamindriss.wixsite.com/amin-driss-insa-lyon/interface-banc-powertrain\n\nStage de fin d'études (mars – septembre 2026) chez Metacar Mobility Systems, startup lyonnaise qui développe le Kiwee, un véhicule électrique emboîtable pour l'autopartage.\n\nMission : concevoir, réaliser et mettre en service un banc d'essai PowerTrain en architecture **Back-to-Back** pour caractériser le rendement du moteur-roue du véhicule.\n\nCe que j'ai réalisé :\n• Conception mécanique sous **SolidWorks** : bâti mécano-soudé validé par calcul éléments finis, capot de sécurité, ligne d'arbre avec couplemètre rotatif\n• Conception électrique : schémas et câblage de l'armoire de puissance et de commande, chaîne de sécurité\n• Instrumentation : **capteurs de courant** à effet Hall avec circuit de conditionnement analogique\n• Commande embarquée : programmation de deux calculateurs **ACTIA SPU 40-26** communiquant par **bus CAN**, stratégie à deux modes (couple-couple et vitesse-couple) avec **correcteurs PID** discrets\n• Supervision : interface développée en **Python** puis portée en **C**++ **(Dear ImGui** / **ImPlot**) : pilotage du banc, courbes en temps réel, essais automatiques couple-vitesse, bilan de puissance et rendement, lecture des capteurs, décodage des messages CAN à partir des fichiers DBC, compatible boîtier PEAK (PCAN) ou **METACAN**\n• METACAN : conception d'un boîtier passerelle USB vers 4 bus CAN indépendants, à base d**'ESP32** et de 4 contrôleurs **MCP2515**, avec écran OLED affichant l'état de chaque bus (firmware Arduino/C++)\n• Mise en service, campagnes d'essais et analyse des résultats\n\nRésultat : banc opérationnel, enveloppe de fonctionnement caractérisée et pistes d'évolution identifiées.\n\nOutils : SolidWorks, ACTIA SPU 40-26, bus CAN (DBC, PCAN), C++ (Dear ImGui, ImPlot, CMake), Python, ESP32, MCP2515",
+  "det": [
+   [
+    "Rôle",
+    "Stagiaire ingénieur, projet de fin d'études"
+   ],
+   [
+    "Type de projet",
+    "Banc d'essai PowerTrain, mécatronique"
+   ],
+   [
+    "Date",
+    "Mars – septembre 2026"
+   ],
+   [
+    "Emplacement",
+    "Metacar Mobility Systems, Irigny (Lyon)"
+   ],
+   [
+    "Compétences clés",
+    "Conception mécanique · Électrotechnique · Instrumentation · Commande embarquée · Bus CAN · Interface de supervision C++"
+   ]
+  ],
+  "im": [
+   [
+    "9cf4a72da98e4495bff046333b33a704.jpg",
+    "pfe_banc_powertrain_armoire",
+    2576,
+    1932
+   ],
+   [
+    "163a1f0792554555b74fa867ed40d8cf.jpg",
+    "Vues CAO SolidWorks du banc PowerTrain avec capot ouvert et de l’armoire électrique",
+    2844,
+    1110
+   ],
+   [
+    "d9f8b2d3236f4e5cb1624a5dbace8e52.jpg",
+    "Menu principal de l'interface de supervision C++ du banc PowerTrain",
+    1384,
+    778
+   ],
+   [
+    "168fbbed04f24133a4432b6b58e7d159.jpg",
+    "Logo de Metacar Mobility Systems",
+    1200,
+    900
+   ],
+   [
+    "ecd900c4f57543e8a0f80f6bea1d7cf4.jpg",
+    "Ligne d'arbre Back-to-Back : deux moteurs-roues et couplemètre",
+    2576,
+    1453
+   ],
+   [
+    "184c5bdb09ef4a20a66b118b2f994fc5.jpg",
+    "Face avant de l'armoire : affichage couple, vitesse et puissance, arrêt d'urgence",
+    1159,
+    2576
+   ],
+   [
+    "2d3a8175d54c4b8ab629fab47ed6644d.jpg",
+    "Intérieur de l'armoire : protections, alimentations et convertisseur de puissance",
+    1159,
+    2576
+   ],
+   [
+    "a4e2448dd12349eab178f3f8fd428838.jpg",
+    "Calculateur ACTIA SPU 40-26 câblé dans l'armoire",
+    1453,
+    2576
+   ],
+   [
+    "741a04d470c941b9950a5678d51b3d26.jpg",
+    "Modèle CAO du boîtier METACAN avec ses quatre connecteurs CAN",
+    1400,
+    1284
+   ],
+   [
+    "453033c74f214cf48e8ba342ba10bca1.jpg",
+    "Boîtier METACAN : passerelle USB vers 4 bus CAN avec écran OLED",
+    2576,
+    1159
+   ],
+   [
+    "104eca58f3924bc1858c04b77162610b.jpg",
+    "METACAN connecté à l'interface de supervision C++",
+    2576,
+    1159
+   ],
+   [
+    "e869893bf28849e7acc5e2276b4f4211.jpg",
+    "Câblage de l'armoire de puissance et de commande",
+    1159,
+    2576
+   ],
+   [
+    "eeac5bcc67364dc7bf23721793ee296d.jpg",
+    "Banc d'essai PowerTrain et son armoire électrique",
+    null,
+    null
+   ]
+  ]
+ },
+ {
+  "s": "conception-mécanique-dactionneur",
+  "t": "Maquette de convoi de véhicules électriques emboîtables – Projet de recherche INSA Lyon x Metacar",
+  "d": "Projet de Recherche et d'Innovation (2025 – 2026) mené à l'INSA Lyon en collaboration avec Metacar, autour du concept **Kiwee** : des véhicules électriques qui s'emboîtent comme des chariots de supermarché pour être déplacés en convoi par un seul opérateur.\n\nObjectif : concevoir et piloter une **maquette fonctionnelle** à l'échelle 1/10, capable de rouler en convoi et de s'emboîter mécaniquement.\n\nCe que j'ai réalisé :\n• Conception mécanique sous **SolidWorks** et fabrication par **impression 3D** : châssis avant, arrière et intermédiaire respectant la géométrie et la répartition des masses du véhicule réel, liaison pivot à ±37°\n• Électronique : architecture décentralisée à base d**'Arduino Nano ESP32**, carte électronique **(PCB**) conçue sur mesure, encodeurs, capteur de pivot et centrale inertielle\n• Communication : pilotage depuis un PC en Wi-Fi (UDP) avec une manette, puis retransmission des consignes d'un véhicule à l'autre par liaison série\n• Commande : modélisation sous **Simulink**, asservissement de vitesse par **PID** avec filtrage numérique, synchronisation des roues, différentiel électronique en virage et **stabilisation du convoi**\n\nRésultat : stabilité du convoi, suivi de trajectoire et robustesse de la commande validés par les essais.\n\nOutils : SolidWorks, impression 3D, ESP32, conception PCB, C++, Python, MATLAB/Simulink",
+  "det": [
+   [
+    "Rôle",
+    "Élève-ingénieur, Projet de Recherche et d'Innovation"
+   ],
+   [
+    "Type de projet",
+    "Prototype mécatronique à l'échelle 1/10"
+   ],
+   [
+    "Date",
+    "2025 – 2026"
+   ],
+   [
+    "Emplacement",
+    "INSA Lyon, en collaboration avec Metacar"
+   ],
+   [
+    "Compétences clés",
+    "CAO · Impression 3D · Conception PCB · Systèmes embarqués · Commande PID · Simulink"
+   ]
+  ],
+  "im": [
+   [
+    "661ed292617e4489886c7d1983d910e0.jpg",
+    "Logo de Metacar Mobility Systems, partenaire du projet",
+    1200,
+    900
+   ],
+   [
+    "f03d22c952c54fe5ab7f5b99cc02ddc2.jpg",
+    "Vue d'ensemble du convoi : châssis, motorisation et direction",
+    1156,
+    628
+   ],
+   [
+    "4e4112302d57402ca374a8ae888189cf.jpg",
+    "Schéma de câblage maître / suiveur du convoi : PC, Wi-Fi, liaison série, Arduino, pont en H et moteurs",
+    1800,
+    908
+   ],
+   [
+    "edf34d340e1c4e949432fe323b6cfe0b.jpg",
+    "Carte électronique dédiée à base d'ESP32 (vue 3D)",
+    1049,
+    713
+   ],
+   [
+    "3ca083ebd52147738719423cce92d2cc.jpg",
+    "Deux véhicules de la maquette emboîtés en convoi (CAO SolidWorks)",
+    null,
+    null
+   ]
+  ]
+ },
+ {
+  "s": "projets-copr-insa-lyon",
+  "t": "Projets COPR à l'INSA Lyon : chariot de batterie INSA Racing Team et simulateur ChirBaby",
+  "d": "À l'INSA Lyon, les COPR (projets en équipe du département Génie Mécanique) mettent une équipe d'élèves-ingénieurs face à un besoin réel, de l'analyse du besoin jusqu'à une solution dimensionnée.\n\n1. Chariot de batterie pour l**'INSA Racing Team** (COPR 4, 2025)\nÉquipe de six élèves, pour l'écurie **Formula Student** de l'INSA. Le règlement impose un chariot dédié pour retirer, déplacer et faire inspecter la batterie du véhicule électrique.\n• **Analyse fonctionnelle** : parties prenantes, phases de vie, hiérarchisation des fonctions (compatibilité avec la batterie, freinage, sécurité, fixation, protection contre les vibrations).\n• Recherche de solutions : décomposition en 7 sous-systèmes et choix par méthode **TOPSIS**.\n• Solution retenue : structure en tubes carrés d'acier soudés, 4 roues pleines (2 pivotantes à l'avant), frein toujours actif sur les roues arrière par patins à ressort, déverrouillé par des poignées de frein de vélo, pare-feu métallique, plots antivibratoires et fixation reprise de celle du véhicule.\n• CAO **SolidWorks**, estimation du coût (environ 208 € HT pour un budget de 200 € HT) et vérifications par éléments finis : plateau sous une batterie de 90 kg (passage de 4 à 16 plots pour rester sous la limite élastique de l'acier S235) et flambage des pieds.\n• Éco-conception (NF E 01-005) et gestion de projet : charte, risques, planning.\n\n2. Simulateur de nouveau-né **ChirBaby 2.0** – module signaux vitaux (COPR S2, juin 2025)\nÉquipe de sept élèves, pour le Dr Frédérick Hameury des Hospices Civils de Lyon. ChirBaby est un mannequin de nouveau-né qui permet aux chirurgiens de s'entraîner à l'opération de l'atrésie de l'œsophage. Notre équipe devait rendre visibles ses signes vitaux et permettre à l'anesthésiste de l'ausculter.\n• Simulateur respiratoire en **Python** : courbes de pression, de volume, de débit et de CO2 expiré, mode libre réglable (volume ou pression contrôlés) et scénarios critiques comme le pneumothorax.\n• Lien avec l'équipe qui anime les organes : la fréquence respiratoire et les modes pneumothorax et curarisation sont transmis à une carte Arduino.\n• Mon rôle, au sein des équipes Arduino et Auscultation : circuit de **capteurs de force** **(FSR**) reliés à une **Arduino Nano ESP32** qui communique en Wi-Fi avec l'ordinateur, et interface d'auscultation de 6 zones du poumon et 2 zones du cœur. Un appui sur un capteur lance le son de respiration correspondant, issu d'une banque d'enregistrements de stéthoscope numérique. Un mode « auscultation » et un mode « opération » évitent de déclencher les capteurs pendant l'intervention.\n\nOutils : SolidWorks, Python, Arduino, analyse fonctionnelle, TOPSIS, calcul par éléments finis, gestion de projet.",
+  "det": [
+   [
+    "Rôle",
+    "Élève-ingénieur au sein d'équipes de six et sept élèves"
+   ],
+   [
+    "Type de projet",
+    "Projets collaboratifs (COPR)"
+   ],
+   [
+    "Date",
+    "2025"
+   ],
+   [
+    "Emplacement",
+    "INSA Lyon"
+   ],
+   [
+    "Compétences clés",
+    "Analyse fonctionnelle · CAO · Calcul par éléments finis · Python · Arduino · Travail en équipe"
+   ]
+  ],
+  "im": [
+   [
+    "9ef6fe9d4b574419b9a7756857467e5e.jpg",
+    "Chariot de batterie INSA Racing Team : modèle CAO SolidWorks",
+    565,
+    610
+   ],
+   [
+    "e80903329fbf4836ae7ee027e676cbde.jpg",
+    "Mise en plan d'assemblage du chariot de batterie (SolidWorks)",
+    1500,
+    2000
+   ],
+   [
+    "645d013ea0b94f5c958889d0cf8f5cc9.jpg",
+    "Système de freinage du chariot : vues de détail",
+    1800,
+    1200
+   ],
+   [
+    "67cc15c6b71e4280bd65cfc9f7ffb34a.jpg",
+    "ChirBaby 2.0 : écran d'accueil de l'interface",
+    1919,
+    1022
+   ],
+   [
+    "4cb362a36d2f440899eabff143c97100.jpg",
+    "Simulateur respiratoire en mode libre",
+    1867,
+    915
+   ],
+   [
+    "2fb5c731be7346d489f95bf040cfa4cb.jpg",
+    "Simulateur respiratoire : scénario pneumothorax",
+    1909,
+    927
+   ],
+   [
+    "0917cb6f6f01409f9555a37f242928f7.jpg",
+    "Interface d'auscultation : 6 zones du poumon et 2 zones du cœur",
+    2182,
+    1120
+   ],
+   [
+    "089f60bdf7ab4bb48e825a4e06509db0.jpg",
+    "Circuit des capteurs de force reliés à l'Arduino Nano ESP32",
+    1701,
+    1000
+   ],
+   [
+    "5309ac6fc1c44b588a4830bc2447a8ff.jpg",
+    "Chariot de batterie INSA Racing Team : modèle CAO SolidWorks",
+    null,
+    null
+   ]
+  ]
+ },
+ {
+  "s": "système-dasservissement-robotisé",
+  "t": "Robots de combat et tout-terrain – Club électrique ENIS (2022 – 2024)",
+  "d": "Au sein du Club Électrique de l'ENIS (Sfax), j'ai participé à la conception de robots : membre de l'équipe de 2022 à 2023, puis **chef de projet** de 2023 à 2024.\n\nCe que j'ai fait :\n• Conception et réalisation de **robots de combat** et de **robots tout-terrain**, de la mécanique jusqu'à la commande.\n• Conception et simulation des circuits électroniques sous **Proteus** : cartes à base d**'Arduino**, étages de puissance à **transistors et relais** pour la commande des moteurs.\n• Intégration, câblage et essais des robots.\n• En tant que chef de projet : répartition des tâches, suivi du planning et coordination de l'équipe.\n• Organisation de l'évènement de robotique **ENISROBOT 6.0**.\n\nModèles 3D interactifs du robot de combat et de son électronique (Arduino, carte de commande à transistors, carte de puissance à relais) : https://medamindriss.wixsite.com/amin-driss-insa-lyon/modeles-3d\n\nOutils : Arduino (C/C++), Proteus, électronique de puissance (transistors, relais), conception mécanique.",
+  "det": [
+   [
+    "Rôle",
+    "Membre (2022 – 2023), puis chef de projet (2023 – 2024)"
+   ],
+   [
+    "Type de projet",
+    "Robotique"
+   ],
+   [
+    "Date",
+    "2022 – 2024"
+   ],
+   [
+    "Emplacement",
+    "ENIS, Sfax"
+   ],
+   [
+    "Compétences clés",
+    "Électronique · Arduino · Proteus · Électronique de puissance · Gestion de projet"
+   ]
+  ],
+  "im": [
+   [
+    "https:",
+    "",
+    1280,
+    800
+   ],
+   [
+    "5a58065c63c94aa7b0c852edd15ffc93.jpg",
+    "Modèle 3D de l'électronique du robot de combat : Arduino, carte de commande à transistors et carte de puissance à relais",
+    1600,
+    1302
+   ],
+   [
+    "9401c4fc74454177aa16de0ae803436e.jpeg",
+    "Robot en arène lors de la compétition",
+    960,
+    1280
+   ],
+   [
+    "5ee83497bf024187b7213a16f835ccd1.jpg",
+    "Logo du Club Électrique de l'ENIS (CEE)",
+    1600,
+    1000
+   ],
+   [
+    "65d1dcf0409e4f829997d6e8e03279c8.jpeg",
+    "Robot de combat du club, vue de face",
+    1536,
+    2048
+   ],
+   [
+    "e55126835bb7405eaffb54d8da60b40e.jpeg",
+    "L'équipe du club avec le robot de combat",
+    2048,
+    1536
+   ],
+   [
+    "fcf4a817eb2148c5a701b609f6794518.jpg",
+    "Arène de combat terminée, prête pour ENISROBOT 6.0",
+    4624,
+    3468
+   ],
+   [
+    "6c9f3d467b0845878b2b1c94a9c8e9e9.jpg",
+    "Arme montée dans l'arène de combat",
+    3468,
+    4624
+   ],
+   [
+    "3c7fc828d79b479e9015fb2863ff0d59.jpg",
+    "Pièges rotatifs de l'arène de combat",
+    4624,
+    3468
+   ],
+   [
+    "30079aea00bd4869807f1c91dc27d6af.jpg",
+    "Construction de l'arène de combat pour ENISROBOT 6.0",
+    4624,
+    3468
+   ],
+   [
+    "43297705c6c847c38d523e412cf37b1e.jpg",
+    "Deux robots tout-terrain réalisés par le club",
+    4624,
+    3468
+   ],
+   [
+    "bb5de4c7107342e49ff234eafd64bc3c.jpg",
+    "Robots tout-terrain en cours de réalisation",
+    1080,
+    720
+   ],
+   [
+    "3c6ec5ca31cd4a429feca49d93604dc4.jpg",
+    "Robot réalisé au Club Électrique de l'ENIS",
+    2576,
+    1932
+   ],
+   [
+    "e7174d43232a465e837ec2926bffcd70.jpeg",
+    "Montage et câblage du robot de combat à l'atelier",
+    1536,
+    2048
+   ],
+   [
+    "d3658405f55e48419c832df9fab68e74.jpg",
+    "Assemblage et câblage d'un robot à l'atelier",
+    3468,
+    4624
+   ],
+   [
+    "96b2520fb4c24311b09eef710d63578d.jpeg",
+    "Carte électronique de commande des moteurs conçue sous Proteus",
+    2048,
+    1536
+   ],
+   [
+    "72eced1d15ba4653b7651f73509b1fdb.jpg",
+    "Circuits imprimés gravés à la main",
+    1600,
+    1200
+   ],
+   [
+    "e86e3fa832c14089a3be83ed584947e9.jpg",
+    "Carte de commande des moteurs réalisée sur plaque à pastilles",
+    1600,
+    1200
+   ],
+   [
+    "519c4629b26846e7b373b6397ce2010f.jpg",
+    "Carte électronique de commande réalisée pour un robot",
+    1600,
+    1200
+   ],
+   [
+    "b068507a0fc64c9ca1bf13b9d96ed6ef.jpg",
+    "Modèle 3D du robot de combat du Club électrique ENIS avec sa pelle avant",
+    null,
+    null
+   ]
+  ]
+ },
+ {
+  "s": "machine-de-lavage-de-fruits-2024",
+  "t": "Machine de lavage de fruits (2024)",
+  "d": "Projet de fin d'année à l'ENIS (2024), réalisé en équipe de trois pour l'entreprise Jufré : concevoir et fabriquer une **machine automatique** qui lave les fruits avant le pressage, à la place du lavage manuel.\n\nCe que nous avons fait :\n• Analyse du besoin et **cahier des charges** : cadence, budget et hygiène alimentaire.\n• Choix des solutions par matrice de décision : agitation de l'eau par souffleurs, rinçage par buses de pulvérisation et vidage par basculement de la cuve avec un vérin **pneumatique**.\n• Dimensionnement de la cuve en **acier inoxydable**, du vérin et de la structure, et étude du **circuit hydraulique**.\n• Conception complète sous **SolidWorks**, avec un coût maîtrisé dans le **budget** fixé.\n• **Fabrication**, **assemblage et essai** de lavage sur un lot de citrons.",
+  "det": [
+   [
+    "Type de projet",
+    "Conception et fabrication"
+   ],
+   [
+    "Date",
+    "2024"
+   ],
+   [
+    "Compétences clés",
+    "Conception mécanique · CAO SolidWorks · Dimensionnement · Pneumatique et hydraulique · Fabrication"
+   ],
+   [
+    "Rôle",
+    "Projet de fin d'année en équipe de trois élèves"
+   ],
+   [
+    "Emplacement",
+    "ENIS, Sfax, pour l'entreprise Jufré"
+   ]
+  ],
+  "im": [
+   [
+    "2fd0369190f645779a5416be91660693.jpg",
+    "L’équipe du projet de fin d’année avec la machine de lavage de fruits",
+    1280,
+    960
+   ],
+   [
+    "9165c040d3854bb99f1b1ce7ff21de0c.jpg",
+    "Modèle CAO SolidWorks de la machine de lavage de fruits",
+    1600,
+    1100
+   ],
+   [
+    "eb500ef4dc2b45bfbfa201de7728008f.jpg",
+    "Vue de dessus de l'assemblage",
+    1600,
+    1100
+   ],
+   [
+    "c2f1e656c728479da588e998d4a8e835.jpg",
+    "Machine de lavage de fruits : bâti inox sur roulettes et trémie de lavage",
+    1500,
+    2000
+   ],
+   [
+    "ba8038b214ee422dbc10920dae0307c5.jpg",
+    "Machine de lavage avec son réservoir d'eau",
+    1500,
+    2000
+   ],
+   [
+    "89ffabc24b8949bb94bf33bbadc08c8c.jpg",
+    "Trémie de lavage en acier inoxydable",
+    1500,
+    2000
+   ],
+   [
+    "e0b0b6badf5e4a5fafb44a9afeb583e7.jpg",
+    "Essai de lavage sur un lot de citrons",
+    1500,
+    2000
+   ],
+   [
+    "0b2322bddebd4addb5765bae510a7788.jpg",
+    "L'équipe du projet de fin d'année avec la machine de lavage de fruits",
+    null,
+    null
+   ]
+  ]
+ },
+ {
+  "s": "projet-dautomatisation-dusine",
+  "t": "Machines spéciales – Stages chez SOPALTEC (2023 – 2024)",
+  "d": "Stages en conception mécanique et en production chez **SOPALTEC**, fabricant de machines spéciales, et chez **MECAFORM-EHK**.\n\nStage 2024 – Conception mécanique :\n• Remise en état d'un **convoyeur modulaire** : modélisation de l'existant sous **SolidWorks**, analyse des défauts, remplacement de pièces fabriquées en **impression 3D** et amélioration du mécanisme de réduction\n• Conception d'un outil d'insertion d'écrous inserts : étude des solutions existantes, calculs de résistance des arbres et paliers, conception sous SolidWorks\n\nAssemblage et mise au point :\n• Participation à l'assemblage de machines spéciales (bâtis en profilés aluminium, convoyeurs, sous-ensembles mécaniques)\n• Participation au calibrage d'un **bol vibrant** d'alimentation de pièces\n\nStages 2023 – Initiation :\n• Production mécanique, transformation des métaux et fabrication de machines spéciales\n\nRobotique :\n• Participation à la préparation du programme d'un bras robotisé **KUKA**\n\nOutils : SolidWorks, impression 3D (Ultimaker Cura), calcul de résistance des matériaux, robot KUKA",
+  "det": [
+   [
+    "Rôle",
+    "Stagiaire en conception mécanique et en production"
+   ],
+   [
+    "Type de projet",
+    "Machines spéciales"
+   ],
+   [
+    "Date",
+    "2023 – 2024"
+   ],
+   [
+    "Compétences clés",
+    "Conception mécanique · CAO SolidWorks · Calcul RDM · Assemblage · Impression 3D · Robotique"
+   ]
+  ],
+  "im": [
+   [
+    "e7e63408f4864cf4ad6babec9b3942ed.jpeg",
+    "Convoyeur modulaire remis en état",
+    2240,
+    4000
+   ],
+   [
+    "ea82a90018f74ff4861eeabc69ebbd8b.jpg",
+    "Atelier SOPALTEC : machines spéciales d'assemblage automatisé avec bols vibrants et convoyeurs",
+    984,
+    443
+   ],
+   [
+    "cabba5c3b4a6442b9f9736cc99301565.jpg",
+    "Logo de SOPALTEC",
+    1600,
+    1000
+   ],
+   [
+    "f9256b16bd394d3e8d75e66f2afd14f3.jpg",
+    "Convoyeur à bande en cours de montage",
+    3468,
+    4624
+   ],
+   [
+    "e580053991a54e68b9ba8be36062a1bc.jpg",
+    "Squelette de machine spéciale en profilés aluminium",
+    3468,
+    4624
+   ],
+   [
+    "4ab5dc843a5e4085a2a23faf2a8397f5.jpeg",
+    "Sous-ensemble d'une machine spéciale en cours d'assemblage",
+    3264,
+    1836
+   ],
+   [
+    "1bd4e674291d4e2eafe9897f17a962ca.jpeg",
+    "Trémie d'une machine spéciale",
+    1824,
+    3264
+   ],
+   [
+    "04264ec1bbe94bfc8d9e0e121b44d219.jpeg",
+    "Modules de convoyeur en cours d'assemblage",
+    4000,
+    2250
+   ],
+   [
+    "c64ffc0ea9544ecb9fb942472042ea53.jpeg",
+    "Plan CAO du convoyeur",
+    4000,
+    2250
+   ],
+   [
+    "0f16dc3c87474493ac6709e2a76bb58c.jpeg",
+    "Bol vibrant d'alimentation de pièces",
+    2342,
+    2250
+   ],
+   [
+    "1936207913974d8bac2ad283156fdd61.jpeg",
+    "Bâti en tôle d'une machine spéciale",
+    1824,
+    3264
+   ],
+   [
+    "e48cb2eb04bc43d58ee016ddd133be31.jpg",
+    "Robot KUKA équipé d'une pince de préhension pour la manipulation de pièces en laiton chez SOPALTEC",
+    null,
+    null
+   ]
+  ]
+ },
+ {
+  "s": "visites-industrielles-misfat-et-caveo-–-enis-2024",
+  "t": "Visites industrielles MISFAT et CAVEO – ENIS (2024)",
+  "d": "Visites industrielles réalisées en 2024 avec l'ENIS (École Nationale d'Ingénieurs de Sfax) dans deux entreprises tunisiennes : **MISFAT**, fabricant de filtres pour l'automobile, et **CAVEO**.\n\nCe que j'ai observé :\n• Des **lignes de production** en série : fabrication et assemblage de filtres, et fabrication de ressorts à lames.\n• Des postes de contrôle qualité, comme le test d'étanchéité des filtres.\n• L'organisation des postes de travail : **instructions de travail** et fiches qualité affichées à chaque poste, flux de production et sécurité.\n\nCes visites m'ont permis de relier mes cours de fabrication et de qualité à la réalité d'une production industrielle.",
+  "det": [
+   [
+    "Type de projet",
+    "Visite industrielle"
+   ],
+   [
+    "Date",
+    "2024"
+   ],
+   [
+    "Emplacement",
+    "Tunisie"
+   ],
+   [
+    "Compétences clés",
+    "Production en série · Contrôle qualité · Organisation industrielle"
+   ]
+  ],
+  "im": [
+   [
+    "0aa2a002947b423fbd66214c47082185.jpg",
+    "Visite industrielle : vue d'ensemble d'un atelier de production",
+    1632,
+    734
+   ],
+   [
+    "8bb87303228d4fb4b608196e5ae13b6b.jpg",
+    "Atelier de fabrication en série",
+    1632,
+    734
+   ],
+   [
+    "c575ce90396c4fa0b868d8ecfafa64ff.jpg",
+    "Ligne de fabrication de filtres",
+    1500,
+    2000
+   ],
+   [
+    "1686d21cb0eb4601b900e59382276002.jpg",
+    "Poste de test d'étanchéité des filtres",
+    1500,
+    2000
+   ],
+   [
+    "b0883ef7341c4bfa87bd562705ae9937.jpg",
+    "Fabrication de ressorts à lames",
+    900,
+    2000
+   ],
+   [
+    "e77ca72605e143908fa5573231905b45.jpg",
+    "Logo MISFAT Filtration",
+    null,
+    null
+   ]
+  ]
+ },
+ {
+  "s": "remise-en-état-dun-laminoir-à-or-à-froid-2024",
+  "t": "Remise en état d'un laminoir d'or à froid (2024)",
+  "d": "Remise en état, réalisée seul, d'un laminoir d'or à froid utilisé en bijouterie (avril 2024).\n\n• **Diagnostic de la machine** à l'arrêt et de son armoire électrique.\n• Reprise et amélioration de la **partie puissance** : **transformateurs**, **contacteurs**, **borniers** et recâblage complet de la platine.\n• Remise en service et essais de la machine.\n• Modélisation 3D du laminoir (colonne centrale et deux têtes de laminage) pour présenter la machine.",
+  "det": [
+   [
+    "Rôle",
+    "Réalisé seul : diagnostic, reprise de la partie puissance et remise en service"
+   ],
+   [
+    "Type de projet",
+    "Maintenance industrielle"
+   ],
+   [
+    "Date",
+    "Avril 2024"
+   ],
+   [
+    "Compétences clés",
+    "Diagnostic de panne · Électrotechnique · Câblage d'armoire · Maintenance industrielle"
+   ]
+  ],
+  "im": [
+   [
+    "https:",
+    "",
+    1280,
+    800
+   ],
+   [
+    "5b3f55822db540d7b40432953e85117d.jpg",
+    "Platine de puissance reprise : transformateurs, contacteurs et borniers",
+    1600,
+    1200
+   ],
+   [
+    "bf29ea539cc64c0284b89a260136d798.jpg",
+    "Laminoir d'or à froid à double tête – modèle 3D",
+    null,
+    null
+   ]
+  ]
+ }
+]
