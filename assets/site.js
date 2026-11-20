@@ -57,12 +57,62 @@ const META = {
   }
 };
 
-const TAGS = {
+const TAGS = window.LANG === "en" ? {
+  meca: "Mechanical",
+  elec: "Electrical and electronics",
+  embarque: "Embedded and software",
+  industrie: "Industry and production"
+} : {
   meca: "Mécanique",
   elec: "Électrique et électronique",
   embarque: "Embarqué et logiciel",
   industrie: "Industrie et production"
 };
+
+const EN = window.LANG === "en";
+const L = (fr, en) => (EN ? en : fr);
+
+// Textes anglais propres au site, par identifiant de projet
+const META_EN = {
+  "banc-powertrain": {
+    summary: "Design and commissioning of a Back-to-Back test bench to measure the efficiency of an electric vehicle in-wheel motor.",
+    tutors: ["Industrial supervisor", "Academic supervisor"], tutorLinks: ["Website", "LinkedIn"]
+  },
+  "convoi-kiwee": {
+    summary: "1/10 scale model of electric vehicles that nest into each other and drive as a convoy: CAD, ESP32 board and PID control.",
+    tutors: ["Academic supervisor"]
+  },
+  "copr-insa-lyon": {
+    summary: "Battery cart for INSA's Formula Student team and vital signs module of a newborn simulator.",
+    extra: [{ label: "Open the interactive demo of the ChirBaby interface", note: "Respiratory simulator and auscultation, in your browser" }]
+  },
+  "robots-club-enis": {
+    summary: "Combat and all-terrain robots, from mechanics to control electronics. Project leader in 2023 – 2024.",
+    links: ["ENIS Electrical Club"],
+    extra: [
+      { label: "Open the interactive 3D models", note: "Combat robot and its electronics, to rotate with the mouse" },
+      { caption: "3D model of the combat robot: rotation and scoop lift" }
+    ]
+  },
+  "machine-lavage-fruits": { summary: "Automatic fruit washing machine, designed and built in a team of three for the company Jufré." },
+  "machines-speciales-sopaltec": { summary: "Refurbishment of a conveyor, tool for inserting threaded inserts and assembly of special machines." },
+  "visites-industrielles": { summary: "Filter and leaf spring production lines, quality control stations and workshop organisation." },
+  "laminoir-or": {
+    summary: "Diagnosis, rewiring of the power section and recommissioning of a jewellery rolling mill, done on my own.",
+    extra: [{ caption: "3D model of the rolling mill: central column and two rolling heads" }]
+  }
+};
+
+function localize(meta) {
+  const e = EN && META_EN[meta.id];
+  if (!e) return meta;
+  const m = { ...meta, summary: e.summary || meta.summary };
+  if (meta.tutors) m.tutors = meta.tutors.map((t, i) => ({ ...t, role: e.tutors?.[i] || t.role,
+    links: (t.links || []).map((l, j) => ({ ...l, label: e.tutorLinks?.[j] || l.label })) }));
+  if (meta.links) m.links = meta.links.map((l, i) => ({ ...l, label: e.links?.[i] || l.label }));
+  if (meta.extra) m.extra = meta.extra.map((x, i) => ({ ...x, ...(e.extra?.[i] || {}) }));
+  return m;
+}
 
 const LINKS = {
   "interface-banc-powertrain": "interface.html",
@@ -89,7 +139,7 @@ function imageUrl(file, size) {
 
 // Prépare un projet : couverture, galerie, métadonnées.
 function prepare(raw) {
-  const meta = META[String(raw.s).normalize("NFC")] || { id: raw.s, year: "", tags: [], summary: "" };
+  const meta = localize(META[String(raw.s).normalize("NFC")] || { id: raw.s, year: "", tags: [], summary: "" });
   // un nom du type « pfe_banc_powertrain » est un nom de fichier : doublon de la couverture
   const isFileName = (n) => /^[a-z0-9]+(_[a-z0-9]+)+$/i.test(n || "");
   const items = raw.im.filter((i) => i[0] && i[0] !== "https:");
@@ -100,8 +150,9 @@ function prepare(raw) {
 }
 
 async function loadProjects() {
-  const res = await fetch("data/projects.json");
-  if (!res.ok) throw new Error("data/projects.json introuvable");
+  const file = EN ? "data/projects.en.json" : "data/projects.json";
+  const res = await fetch(file);
+  if (!res.ok) throw new Error(file + " introuvable");
   return (await res.json()).map(prepare);
 }
 
@@ -110,7 +161,7 @@ async function renderHome() {
   const list = document.getElementById("project-list");
   if (!list) return;
   let projects;
-  try { projects = await loadProjects(); } catch (e) { list.innerHTML = `<li class="loading">Les projets n'ont pas pu être chargés.</li>`; return; }
+  try { projects = await loadProjects(); } catch (e) { list.innerHTML = `<li class="loading">${L("Les projets n'ont pas pu être chargés.", "The projects could not be loaded.")}</li>`; return; }
   list.innerHTML = projects.map((p) => `
     <li class="project-row" data-tags="${p.tags.join(" ")}">
       <a href="projet.html?p=${p.id}">
@@ -134,7 +185,7 @@ async function renderHome() {
       row.hidden = !ok;
       if (ok) shown++;
     });
-    document.getElementById("filter-count").textContent = `${shown} projet${shown > 1 ? "s" : ""}`;
+    document.getElementById("filter-count").textContent = `${shown} ${L("projet", "project")}${shown > 1 ? "s" : ""}`;
   }));
 }
 
@@ -150,14 +201,14 @@ function renderDescription(text) {
     if (url && lines.length === 1) {
       const label = plain(first.replace(url[0], "").replace(/^▶/, "").replace(/:\s*$/, ""));
       const href = localLink(url[0]);
-      out.push(`<a class="demo-link" href="${esc(href)}"><span><strong>${esc(label)}</strong><small>Ouvre une page interactive dans ce site</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>`);
+      out.push(`<a class="demo-link" href="${esc(href)}"><span><strong>${esc(label)}</strong><small>${L("Ouvre une page interactive dans ce site", "Opens an interactive page on this site")}</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>`);
       continue;
     }
 
-    const tools = first.match(/^Outils\s*:\s*(.+)$/);
+    const tools = first.match(/^(?:Outils|Tools)\s*:\s*(.+)$/);
     if (tools && lines.length === 1) {
       const parts = plain(tools[1]).replace(/\.$/, "").split(/,\s*(?![^()]*\))/);
-      out.push(`<h3>Outils</h3><ul class="tools-line">${parts.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>`);
+      out.push(`<h3>${L("Outils", "Tools")}</h3><ul class="tools-line">${parts.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>`);
       continue;
     }
 
@@ -173,8 +224,8 @@ function renderDescription(text) {
       }
       const isHeading = (/:\s*$/.test(l) && lines[i + 1]?.startsWith("•")) || (/^\d+\.\s/.test(l) && l.length < 140);
       if (isHeading) { html += `<h3>${inline(l.replace(/\s*:\s*$/, ""))}</h3>`; i++; continue; }
-      const lab = l.match(/^(Mission|Objectif|Résultat|Contexte)\s*:\s*(.+)$/);
-      if (lab) { html += `<p><span class="lead-label">${lab[1]} :</span> ${inline(lab[2])}</p>`; i++; continue; }
+      const lab = l.match(/^(Mission|Objectif|Résultat|Contexte|Objective|Result|Context)\s*:\s*(.+)$/);
+      if (lab) { html += `<p><span class="lead-label">${lab[1]}${L(" :", ":")}</span> ${inline(lab[2])}</p>`; i++; continue; }
       html += `<p>${inline(l)}</p>`;
       i++;
     }
@@ -189,7 +240,7 @@ async function renderProject() {
   if (!root) return;
   const id = new URLSearchParams(location.search).get("p");
   let projects;
-  try { projects = await loadProjects(); } catch (e) { root.innerHTML = `<p class="loading">Ce projet n'a pas pu être chargé.</p>`; return; }
+  try { projects = await loadProjects(); } catch (e) { root.innerHTML = `<p class="loading">${L("Ce projet n'a pas pu être chargé.", "This project could not be loaded.")}</p>`; return; }
   const idx = Math.max(0, projects.findIndex((p) => p.id === id));
   const p = projects[idx];
   document.title = `${p.title} | Amin Driss`;
@@ -197,7 +248,9 @@ async function renderProject() {
 
   const order = ["Rôle", "Date", "Emplacement", "Type de projet", "Compétences clés"];
   const det = [...p.details].sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0]));
-  const label = { Emplacement: "Lieu" };
+  const label = EN
+    ? { "Rôle": "Role", Date: "Date", Emplacement: "Location", "Type de projet": "Project type", "Compétences clés": "Key skills" }
+    : { Emplacement: "Lieu" };
   const cells = det.map(([k, v]) => {
     const full = k === "Rôle" || k === "Compétences clés" || v.length > 34;
     return `<div class="${full ? "full" : ""}"><dt>${esc(label[k] || k)}</dt><dd>${esc(v)}</dd></div>`;
@@ -231,7 +284,7 @@ async function renderProject() {
 
   root.innerHTML = `
     <div class="wrap">
-      <a class="back" href="index.html#projets">Tous les projets</a>
+      <a class="back" href="index.html#projets">${L("Tous les projets", "All projects")}</a>
       <header class="p-head">
         <h1>${esc(p.title)}</h1>
         <p class="summary">${esc(p.summary)}</p>
@@ -240,25 +293,25 @@ async function renderProject() {
       <div class="p-body">
         <article class="prose">
           ${linkExtras.map((x) => `<a class="demo-link" href="${x.link}"><span><strong>${esc(x.label)}</strong><small>${esc(x.note)}</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>`).join("")}
-          ${renderDescription(p.raw.d.replace(/\n*Modèles 3D interactifs[^\n]*https?:\/\/\S+/, ""))}
+          ${renderDescription(p.raw.d.replace(/\n*(Modèles 3D interactifs|Interactive 3D models)[^\n]*https?:\/\/\S+/, ""))}
         </article>
-        <aside class="cartouche" aria-label="Fiche du projet">
+        <aside class="cartouche" aria-label="${L("Fiche du projet", "Project details")}">
           <dl>${fixed.join("")}</dl>
-          <div class="sign full"><span>Amin Driss</span><small>Projet ${idx + 1} sur ${projects.length}</small></div>
+          <div class="sign full"><span>Amin Driss</span><small>${L("Projet", "Project")} ${idx + 1} ${L("sur", "of")} ${projects.length}</small></div>
         </aside>
       </div>
       ${media.length ? `
       <section aria-labelledby="g-title">
-        <div class="gallery-head"><h2 id="g-title">Images du projet</h2><span>${media.length} élément${media.length > 1 ? "s" : ""}</span></div>
+        <div class="gallery-head"><h2 id="g-title">${L("Images du projet", "Project images")}</h2><span>${media.length} ${L("élément", "item")}${media.length > 1 ? "s" : ""}</span></div>
         <div class="gallery">
           ${media.map((m, k) => m.video
             ? `<figure><video class="is-video" src="${m.video}" controls muted loop playsinline preload="metadata"></video><figcaption>${esc(m.alt)}</figcaption></figure>`
-            : `<figure><button type="button" data-k="${k}" aria-label="Agrandir : ${esc(m.alt)}"><img src="${m.thumb}" alt="${esc(m.alt)}" loading="lazy" ${m.w ? `width="${m.w}" height="${m.h}"` : ""}></button><figcaption>${esc(m.alt)}</figcaption></figure>`).join("")}
+            : `<figure><button type="button" data-k="${k}" aria-label="${L("Agrandir : ", "Enlarge: ")}${esc(m.alt)}"><img src="${m.thumb}" alt="${esc(m.alt)}" loading="lazy" ${m.w ? `width="${m.w}" height="${m.h}"` : ""}></button><figcaption>${esc(m.alt)}</figcaption></figure>`).join("")}
         </div>
       </section>` : ""}
-      <nav class="p-nav" aria-label="Autres projets">
-        ${idx > 0 ? `<a href="projet.html?p=${projects[idx - 1].id}"><small>Projet précédent</small><strong>${esc(projects[idx - 1].title)}</strong></a>` : "<span></span>"}
-        ${idx < projects.length - 1 ? `<a class="next" href="projet.html?p=${projects[idx + 1].id}"><small>Projet suivant</small><strong>${esc(projects[idx + 1].title)}</strong></a>` : "<span></span>"}
+      <nav class="p-nav" aria-label="${L("Autres projets", "Other projects")}">
+        ${idx > 0 ? `<a href="projet.html?p=${projects[idx - 1].id}"><small>${L("Projet précédent", "Previous project")}</small><strong>${esc(projects[idx - 1].title)}</strong></a>` : "<span></span>"}
+        ${idx < projects.length - 1 ? `<a class="next" href="projet.html?p=${projects[idx + 1].id}"><small>${L("Projet suivant", "Next project")}</small><strong>${esc(projects[idx + 1].title)}</strong></a>` : "<span></span>"}
       </nav>
     </div>`;
 

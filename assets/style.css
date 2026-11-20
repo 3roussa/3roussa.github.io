@@ -272,3 +272,18 @@ p { margin: 0 0 1em; }
 .cartouche .tutor dd span { display: block; color: var(--steel); font-size: 0.95rem; }
 .cartouche .tutor .t-links { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 4px; }
 .cartouche .tutor .t-links a { color: var(--blue, #24557a); text-decoration: underline; text-underline-offset: 2px; }
+
+/* Choix de la langue */
+.lang { display: inline-flex; border: 1.5px solid var(--line); border-radius: 3px; overflow: hidden; }
+.lang button { font: inherit; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.02em; padding: 5px 9px; border: 0; background: transparent; color: var(--steel); cursor: pointer; }
+.lang button + button { border-left: 1.5px solid var(--line); }
+.lang button[aria-pressed="true"] { background: var(--ink); color: var(--white); }
+.lang button:hover:not([aria-pressed="true"]) { color: var(--ink); background: var(--paper-2); }
+.lang button:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+.brand { white-space: nowrap; }
+@media (max-width: 440px) {
+  .site-head .wrap { gap: 10px; }
+  .nav { gap: 10px; }
+  .nav .nav-cv { padding: 5px 8px; }
+  .lang button { padding: 4px 7px; }
+}
