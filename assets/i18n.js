@@ -16,6 +16,7 @@
 
   function translate() {
     if (lang !== "en") return;
+    document.querySelectorAll('a[href="CV_Amin_Driss.pdf"]').forEach(function (a) { a.setAttribute("href", "CV_Amin_Driss_EN.pdf"); });
     document.querySelectorAll("*").forEach(function (el) {
       for (var i = 0; i < el.attributes.length; i++) {
         var a = el.attributes[i];
