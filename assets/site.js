@@ -29,7 +29,10 @@ const META = {
   "système-dasservissement-robotisé": {
     id: "robots-club-enis", year: "2022 – 2024", tags: ["elec", "embarque"],
     summary: "Robots de combat et tout-terrain, de la mécanique à l'électronique de commande. Chef de projet en 2023 – 2024.",
-    links: [{ label: "Club électrique ENIS", href: "https://www.instagram.com/club_electrique_enis/", text: "Instagram du club" }],
+    links: [{ label: "Club électrique ENIS", items: [
+      { href: "https://www.instagram.com/club_electrique_enis/", text: "Instagram" },
+      { href: "https://www.linkedin.com/company/club-electrique-enis-cee/about/", text: "LinkedIn" }
+    ] }],
     extra: [
       { link: "modeles-3d.html", label: "Voir les modèles 3D interactifs", note: "Robot de combat et son électronique, à faire tourner à la souris" },
       { video: "videos/robot-cee-3d.mp4", caption: "Modèle 3D du robot de combat : rotation et levée de la pelle" }
@@ -214,7 +217,7 @@ async function renderProject() {
   });
 
   (p.links || []).forEach((l) => {
-    fixed.push(`<div class="full tutor"><dt>${esc(l.label)}</dt><dd><span class="t-links"><a href="${l.href}" rel="noopener" target="_blank">${esc(l.text)}</a></span></dd></div>`);
+    fixed.push(`<div class="full tutor"><dt>${esc(l.label)}</dt><dd><span class="t-links">${l.items.map((x) => `<a href="${x.href}" rel="noopener" target="_blank">${esc(x.text)}</a>`).join("")}</span></dd></div>`);
   });
 
   const extras = p.extra || [];
